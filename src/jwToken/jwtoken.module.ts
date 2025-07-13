@@ -1,6 +1,6 @@
 import { interfaces } from "inversify";
 import { IJwTokenHelper } from "./interfaces/jwtoken-helper.interface";
-import { Module } from "../app/module";
+import { Module } from "../module";
 
 export class JwTokenHelperModule extends Module {
   constructor(

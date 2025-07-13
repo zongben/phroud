@@ -1,0 +1,18 @@
+import { Result } from "../../../../../../src/result";
+import { Request } from "../../../../../../src/mediator";
+import { RegisterError, RegisterResult } from "./register.result";
+
+export class RegisterCommand extends Request<
+  Result<RegisterResult, RegisterError>
+> {
+  readonly account: string;
+  readonly password: string;
+  readonly username: string;
+
+  constructor(props: { account: string; password: string; username: string }) {
+    super();
+    this.account = props.account;
+    this.password = props.password;
+    this.username = props.username;
+  }
+}

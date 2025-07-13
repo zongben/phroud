@@ -65,11 +65,13 @@ export class App {
     this.env = new Env(path);
     this.serviceContainer.bind<IEnv>(APP_TYPES.IEnv).toConstantValue(this.env);
     this.logger.info(`Dotenv is loaded from ${path}`);
+    return this;
   }
 
   useLogger(logger: ILogger) {
     this.logger = logger;
     this._bindLogger();
+    return this;
   }
 
   useMediator(
@@ -124,67 +126,70 @@ export class App {
       this.logger.debug(`${ControllerClass.name} Mounted at ${fullMountPath}`);
       this._app.use(fullMountPath, router);
     });
-
     return this;
   }
 
   setExceptionHandler(handler: ExceptionHandler) {
     this._exceptionHandler = handler;
+    return this;
   }
 
   setNotFoundHandler(handler: NotFoundHandler) {
     this._notFoundHandler = handler;
+    return this;
   }
 
-  useTimerMiddleware(handler: TimerHanlder): ExpressMiddleware {
-    return (req: any, res: any, next: any) => {
+  useTimerMiddleware(handler: TimerHanlder) {
+    this.useMiddleware((req: any, res: any, next: any) => {
       const timer = Timer.create();
       const start = performance.now();
 
       onFinished(res, () => {
         const end = performance.now();
         const duration = end - start;
-        handler(duration, req, timer.getAllTimeSpans());
+        handler(duration, timer.getAllTimeSpans(), req, res);
       });
 
       timerStorage.run(timer, () => {
         next();
       });
-    };
+    });
+    return this;
   }
 
-  private _useExceptionMiddleware(): ErrorRequestHandler {
-    return (err, req, res, next) => {
-      if (res.headersSent) return next(err);
-      this.logger.error(err);
-      let result;
-      let statusCode;
-      if (this._exceptionHandler) {
-        const handlerResult = this._exceptionHandler(err, req);
-        if (handlerResult) {
-          result = handlerResult.body;
-          statusCode = handlerResult.statusCode;
-        }
+  private _useExceptionMiddleware: ErrorRequestHandler = (
+    err,
+    req,
+    res,
+    next,
+  ) => {
+    if (res.headersSent) return next(err);
+    this.logger.error(err);
+    let result;
+    let statusCode;
+    if (this._exceptionHandler) {
+      const handlerResult = this._exceptionHandler(err, req);
+      if (handlerResult) {
+        result = handlerResult.body;
+        statusCode = handlerResult.statusCode;
       }
-      res.status(statusCode ?? 500).json(result ?? "Internal Server Error");
-    };
-  }
+    }
+    res.status(statusCode ?? 500).json(result ?? "Internal Server Error");
+  };
 
-  private _useNotFoundMiddleware(): ExpressMiddleware {
-    return (req, res) => {
-      this.logger.warn(`Not found: ${req.method} ${req.originalUrl}`);
-      let statusCode;
-      let result;
-      if (this._notFoundHandler) {
-        const handlerResult = this._notFoundHandler(req);
-        if (handlerResult) {
-          result = handlerResult.body;
-          statusCode = handlerResult.statusCode;
-        }
+  private _useNotFoundMiddleware: ExpressMiddleware = (req, res) => {
+    this.logger.warn(`Not found: ${req.method} ${req.originalUrl}`);
+    let statusCode;
+    let result;
+    if (this._notFoundHandler) {
+      const handlerResult = this._notFoundHandler(req);
+      if (handlerResult) {
+        result = handlerResult.body;
+        statusCode = handlerResult.statusCode;
       }
-      res.status(statusCode ?? 404).json(result ?? "Not Found");
-    };
-  }
+    }
+    res.status(statusCode ?? 404).json(result ?? "Not Found");
+  };
 
   useMiddleware(middleware: ExpressMiddleware) {
     this._app.use(middleware);
@@ -237,7 +242,7 @@ export class App {
   }
 
   run(port: number = 3000) {
-    this.useMiddleware(this._useExceptionMiddleware);
+    this.useMiddleware(this._useExceptionMiddleware as any);
     this.useMiddleware(this._useNotFoundMiddleware);
 
     this._server = this._app.listen(port, () => {

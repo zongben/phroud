@@ -26,8 +26,9 @@ export type NotFoundHandler = (req: Request) => NotFoundHandlerResult | void;
 
 export type TimerHanlder = (
   duration: number,
-  req: Request,
   timeSpan: TimeSpan[],
+  req: Request,
+  res: Response,
 ) => void;
 
 export type AllowAnonymousPath = {

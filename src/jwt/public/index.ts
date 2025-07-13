@@ -5,7 +5,7 @@ import { IJwTokenHelper } from "./interfaces";
 import { JwtHandler, JwtHandlerResult, JwTokenSettings } from "./types";
 import { Module } from "../../di";
 
-export function jwtValidHandler(secret: string, handler: JwtHandler) {
+export function jwtValidHandler(secret: string, handler?: JwtHandler) {
   return (req: Request, res: Response, next: NextFunction) => {
     function handleError(
       fallbackStatus: number,
@@ -22,14 +22,14 @@ export function jwtValidHandler(secret: string, handler: JwtHandler) {
 
     let token = req.headers.authorization;
     if (!token || !token.startsWith("Bearer ")) {
-      handleError(401, "Unauthorized", handler.onUnauthorized);
+      handleError(401, "Unauthorized", handler?.onUnauthorized);
       return;
     }
     token = token.slice(7, token.length);
     try {
       const payload = jwt.verify(token, secret);
       res.locals.jwt = payload;
-      if (handler.onSuccess) {
+      if (handler?.onSuccess) {
         handler.onSuccess(payload, req, res, next);
         return;
       } else {
@@ -37,9 +37,9 @@ export function jwtValidHandler(secret: string, handler: JwtHandler) {
       }
     } catch (err: any) {
       if (err.name === "TokenExpiredError") {
-        handleError(401, "Token Expired", handler.onExpired);
+        handleError(401, "Token Expired", handler?.onExpired);
       } else {
-        handleError(401, "Unauthorized", handler.onUnauthorized);
+        handleError(401, "Unauthorized", handler?.onUnauthorized);
       }
       return;
     }

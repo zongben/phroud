@@ -25,3 +25,7 @@ Content-Type: application/json
 
 GET {{host}}/notfound
 Content-Type: application/json
+
+###
+
+DELETE {{host}}

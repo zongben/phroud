@@ -1,4 +1,10 @@
-import { Body, Controller, Post, Responses } from "../../../src/controller";
+import {
+  Body,
+  Controller,
+  Delete,
+  Post,
+  Responses,
+} from "../../../src/controller";
 import { MediatedController } from "../../../src/mediator";
 import { matchResult } from "../../../src/result";
 import { TrackClassMethods } from "../../../src/utils";
@@ -62,5 +68,13 @@ export class AuthController extends MediatedController {
         },
       },
     });
+  }
+
+  @Delete("/")
+  async delete() {}
+
+  @Post("/error")
+  async error() {
+    throw new Error("error test");
   }
 }

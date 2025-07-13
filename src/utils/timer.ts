@@ -1,4 +1,5 @@
 import { performance } from "node:perf_hooks";
+import { timerStorage } from "./_internal";
 
 export type TimeSpan = {
   id: number;
@@ -13,6 +14,16 @@ export class Timer {
   private _timeSpans: TimeSpan[] = [];
   private _stack: number[] = [];
   private _index = 0;
+
+  private constructor() {}
+
+  static current() {
+    return timerStorage.getStore() ?? new Timer();
+  }
+
+  static create() {
+    return new Timer();
+  }
 
   start(label: string): number {
     const id = this._index++;
@@ -37,6 +48,12 @@ export class Timer {
       this._stack.pop();
     }
     return timeSpan;
+  }
+
+  reset() {
+    this._index = 0;
+    this._stack = [];
+    this._timeSpans = [];
   }
 
   getAllTimeSpans(): TimeSpan[] {

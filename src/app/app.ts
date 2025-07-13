@@ -27,7 +27,7 @@ import { MediatorPipe } from "../mediator/mediator-pipe";
 import { Module } from "./module";
 import { Timer } from "../utils/timer";
 import onFinished from "on-finished";
-import { timerStorage } from "../utils/tracker";
+import { timerStorage } from "../utils/_internal";
 
 export class App {
   private _app: express.Application;
@@ -140,7 +140,7 @@ export class App {
 
   useTimerMiddleware(handler: TimerHanlder): PhroudMiddleware {
     return (req: any, res: any, next: any) => {
-      const timer = new Timer();
+      const timer = Timer.create();
       const start = performance.now();
 
       onFinished(res, () => {

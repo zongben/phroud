@@ -1,7 +1,4 @@
-import { AsyncLocalStorage } from "node:async_hooks";
 import { Timer } from "./timer";
-
-export const timerStorage = new AsyncLocalStorage<Timer>();
 
 export function TrackClassMethods(): ClassDecorator {
   return (target: any) => {
@@ -14,7 +11,7 @@ export function TrackClassMethods(): ClassDecorator {
       const original = target.prototype[name];
 
       target.prototype[name] = function (...args: any[]) {
-        const timer = timerStorage.getStore();
+        const timer = Timer.current();
         const label = `${target.name}.${name}`;
         const id = timer?.start(label) ?? -1;
 
@@ -41,7 +38,7 @@ export function TrackMethod(): MethodDecorator {
       const className = isStatic
         ? target.name
         : (target.constructor?.name ?? "Function");
-      const timer = timerStorage.getStore();
+      const timer = Timer.current();
       const label = `${className}.${String(propertyKey)}`;
       const id = timer?.start(label) ?? -1;
 

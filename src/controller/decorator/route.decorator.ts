@@ -33,10 +33,7 @@ export type RouteDefinition = {
 };
 
 function _createRouteDecorator(method: RouteDefinition["method"]) {
-  return (
-    path: string,
-    ...middleware: PhroudMiddleware[]
-  ): MethodDecorator => {
+  return (path: string, ...middleware: PhroudMiddleware[]): MethodDecorator => {
     return (target, propertyKey, descriptor: PropertyDescriptor) => {
       const original = descriptor.value;
 

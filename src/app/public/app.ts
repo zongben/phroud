@@ -19,13 +19,13 @@ import {
 } from "../../controller/_internal";
 import { Timer } from "../../utils";
 import { timerStorage } from "../../utils/_internal";
-import { Module } from "../../module";
 import {
   ExceptionHandler,
   ExpressMiddleware,
   NotFoundHandler,
   TimerHanlder,
 } from "./types";
+import { Module } from "../../di";
 
 export class App {
   private _app: express.Application;

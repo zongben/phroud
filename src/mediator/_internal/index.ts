@@ -7,7 +7,7 @@ import {
   ISender,
 } from "../public/interfaces";
 import { MEDIATOR_TYPES, MediatorPipe } from "../public";
-import { Module } from "../../module";
+import { Module } from "../../di";
 
 export const METADATA_KEY = {
   handlerFor: Symbol.for("handleFor"),

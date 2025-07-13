@@ -2,8 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import { interfaces } from "inversify";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { IJwTokenHelper } from "./interfaces";
-import { Module } from "../../module";
 import { JwtHandler, JwtHandlerResult, JwTokenSettings } from "./types";
+import { Module } from "../../di";
 
 export function jwtValidHandler(secret: string, handler: JwtHandler) {
   return (req: Request, res: Response, next: NextFunction) => {

@@ -6,13 +6,7 @@ import { Socket } from "net";
 import cors from "cors";
 import bodyParser from "body-parser";
 import onFinished from "on-finished";
-import {
-  APP_TYPES,
-  ExceptionHandler,
-  ExpressMiddleware,
-  NotFoundHandler,
-  TimerHanlder,
-} from ".";
+import { APP_TYPES } from ".";
 import { ILogger } from "../../logger";
 import { AppOptions, Env, Logger } from "../_internal";
 import { IEnv } from "./interfaces";
@@ -26,6 +20,12 @@ import {
 import { Timer } from "../../utils";
 import { timerStorage } from "../../utils/_internal";
 import { Module } from "../../module";
+import {
+  ExceptionHandler,
+  ExpressMiddleware,
+  NotFoundHandler,
+  TimerHanlder,
+} from "./types";
 
 export class App {
   private _app: express.Application;

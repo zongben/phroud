@@ -1,4 +1,4 @@
-import { ExpressMiddleware } from "../../../app/types";
+import { ExpressMiddleware } from "../../../app/public/types";
 import {
   CONTROLLER_METADATA,
   createParamDecorator,

@@ -1,21 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
-
-export type JwtHandlerResult = {
-  status: number;
-  body: any;
-};
-
-export type JwtHandler = {
-  onUnauthorized?: (req: Request, res: Response) => JwtHandlerResult;
-  onExpired?: (req: Request, res: Response) => JwtHandlerResult;
-  onSuccess?: (
-    payload: string | jwt.JwtPayload,
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => void;
-};
+import { interfaces } from "inversify";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { IJwTokenHelper } from "./interfaces";
+import { Module } from "../../module";
+import { JwtHandler, JwtHandlerResult, JwTokenSettings } from "./types";
 
 export function jwtValidHandler(secret: string, handler: JwtHandler) {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -56,4 +44,34 @@ export function jwtValidHandler(secret: string, handler: JwtHandler) {
       return;
     }
   };
+}
+
+export class JwTokenHelper implements IJwTokenHelper {
+  constructor(private settings: JwTokenSettings) {}
+
+  generateToken(payload: any): string {
+    return jwt.sign(payload, this.settings.secret, this.settings.options);
+  }
+
+  verifyToken(token: string): JwtPayload | null {
+    try {
+      const payload = jwt.verify(token, this.settings.secret);
+      return typeof payload === "string" ? null : payload;
+    } catch {
+      return null;
+    }
+  }
+}
+
+export class JwTokenHelperModule extends Module {
+  constructor(
+    private symbol: symbol,
+    private jwtHelper: IJwTokenHelper,
+  ) {
+    super();
+  }
+
+  protected bindModule(bind: interfaces.Bind) {
+    bind(this.symbol).toConstantValue(this.jwtHelper);
+  }
 }

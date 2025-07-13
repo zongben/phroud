@@ -3,8 +3,8 @@ import {
   ValidationError,
   validationResult,
 } from "express-validator";
-import { ExpressMiddleware } from "../../app/types";
 import { NextFunction, Request, Response } from "express";
+import { ExpressMiddleware } from "../../app/public/types";
 
 export const createRule = <T>(
   handler: (key: (k: keyof T) => string) => ValidationChain[],

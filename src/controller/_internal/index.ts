@@ -1,5 +1,5 @@
 import { CookieOptions, Request, Response, NextFunction } from "express";
-import { ExpressMiddleware } from "../../app/types";
+import { ExpressMiddleware } from "../../app/public/types";
 
 export const CONTROLLER_METADATA = {
   PATH: Symbol("controller_path"),

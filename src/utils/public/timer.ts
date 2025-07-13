@@ -1,14 +1,6 @@
 import { performance } from "node:perf_hooks";
 import { timerStorage } from "../_internal";
-
-export type TimeSpan = {
-  id: number;
-  label: string;
-  start: number;
-  end?: number;
-  duration?: number;
-  depth?: number;
-};
+import { TimeSpan } from "./types";
 
 export class Timer {
   private _timeSpans: TimeSpan[] = [];

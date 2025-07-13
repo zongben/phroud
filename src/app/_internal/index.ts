@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
 import { IEnv } from "../public/interfaces";
-import { AllowAnonymousPath } from "../public";
 import { interfaces } from "inversify";
 import { ILogger } from "../../logger";
+import { AllowAnonymousPath } from "..";
 
 export class Env implements IEnv {
   private _env;

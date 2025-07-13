@@ -9,6 +9,7 @@ import {
   ExceptionHandler,
   NotFoundHandler,
   PhroudMiddleware,
+  TimerHanlder,
 } from "./types";
 import http from "http";
 import { Socket } from "net";
@@ -24,6 +25,9 @@ import { IReqHandler } from "../mediator/interfaces/req-handler.interface";
 import { MediatorModule } from "../mediator/mediator.module";
 import { MediatorPipe } from "../mediator/mediator-pipe";
 import { Module } from "./module";
+import { Timer } from "../utils/timer";
+import onFinished from "on-finished";
+import { timerStorage } from "../utils/tracker";
 
 export class App {
   private _app: express.Application;
@@ -106,7 +110,7 @@ export class App {
       const routes: RouteDefinition[] =
         Reflect.getMetadata(ROUTE_METADATA_KEY, ControllerClass) || [];
 
-      const router = Router();
+      const router = Router({ mergeParams: true });
       for (const route of routes) {
         const handler = instance[route.handlerName].bind(instance);
         const middleware = route.middleware || [];
@@ -119,6 +123,7 @@ export class App {
       const fullMountPath = `${this.options.routerPrefix}/${controllerPath}`
         .replace(/\/+/g, "/")
         .toLowerCase();
+      this.logger.debug(`${ControllerClass.name} Mounted at ${fullMountPath}`);
       this._app.use(fullMountPath, router);
     });
 
@@ -131,6 +136,23 @@ export class App {
 
   setNotFoundHandler(handler: NotFoundHandler) {
     this._notFoundHandler = handler;
+  }
+
+  useTimerMiddleware(handler: TimerHanlder): PhroudMiddleware {
+    return (req: any, res: any, next: any) => {
+      const timer = new Timer();
+      const start = performance.now();
+
+      onFinished(res, () => {
+        const end = performance.now();
+        const duration = end - start;
+        handler(duration, req, timer.getAllTimeSpans());
+      });
+
+      timerStorage.run(timer, () => {
+        next();
+      });
+    };
   }
 
   private _useExceptionMiddleware(): ErrorRequestHandler {
@@ -217,8 +239,8 @@ export class App {
   }
 
   run(port: number = 3000) {
-    this._useNotFoundMiddleware();
-    this._useExceptionMiddleware();
+    this.useMiddleware(this._useExceptionMiddleware);
+    this.useMiddleware(this._useNotFoundMiddleware);
 
     this._server = this._app.listen(port, () => {
       this.logger.info(`Listening on port ${port}`);

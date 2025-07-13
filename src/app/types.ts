@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { TimeSpan } from "../utils/timer";
 
 export const APP_TYPES = {
   IEnv: Symbol.for("IEnv"),
@@ -27,6 +28,12 @@ export type ExceptionHandler = (
 ) => ExceptionHandlerResult | void;
 
 export type NotFoundHandler = (req: Request) => NotFoundHandlerResult | void;
+
+export type TimerHanlder = (
+  duration: number,
+  req: Request,
+  timeSpan: TimeSpan[],
+) => void;
 
 export type AllowAnonymousPath = {
   path: string;

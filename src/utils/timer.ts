@@ -1,6 +1,6 @@
 import { performance } from "node:perf_hooks";
 
-type TimeSpan = {
+export type TimeSpan = {
   id: number;
   label: string;
   start: number;

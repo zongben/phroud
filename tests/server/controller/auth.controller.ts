@@ -1,8 +1,8 @@
 import {
-    Anonymous,
+  Anonymous,
   Body,
   Controller,
-  Delete,
+  Get,
   Post,
   Responses,
 } from "../../../src/controller";
@@ -72,11 +72,16 @@ export class AuthController extends MediatedController {
     });
   }
 
-  @Delete("/")
-  async delete() {}
+  @Get("/empty")
+  async empty() {}
 
   @Post("/error")
   async error() {
     throw new Error("error test");
+  }
+
+  @Get("/file")
+  async file() {
+    return Responses.File("test.txt", `${process.cwd()}/tests/assets/test.txt`);
   }
 }

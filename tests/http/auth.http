@@ -28,4 +28,10 @@ Content-Type: application/json
 
 ###
 
-DELETE {{host}}
+GET {{host}}/empty
+Content-Type: application/json
+
+###
+
+GET {{host}}/file
+Content-Type: application/json

@@ -1,1 +1,0 @@
-{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../../src/mediator/_internal/interfaces/index.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,UAAU,EAAE,OAAO,EAAE,MAAM,yBAAyB,CAAC;AAE9D,MAAM,WAAW,YAAY;IAC3B,GAAG,CAAC,GAAG,EAAE,GAAG,EAAE,OAAO,EAAE,GAAG,GAAG,IAAI,CAAC;IAClC,GAAG,CAAC,GAAG,EAAE,GAAG,GAAG,GAAG,CAAC;CACpB;AAED,MAAM,WAAW,SAAU,SAAQ,OAAO,EAAE,UAAU;CAAG"}

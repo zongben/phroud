@@ -1,6 +1,5 @@
 import dotenv from "dotenv";
 import { IEnv } from "../public/interfaces";
-import { interfaces } from "inversify";
 import { ILogger } from "../../logger";
 
 export class Env implements IEnv {
@@ -22,9 +21,6 @@ export class Env implements IEnv {
 
 export class AppOptions {
   routerPrefix: string = "/api";
-  container: interfaces.ContainerOptions = {
-    autoBindInjectable: true,
-  };
 }
 
 export class Logger implements ILogger {

@@ -45,7 +45,9 @@ export class App {
     this._app = express();
     this._connections = new Set<Socket>();
     this.logger = new Logger();
-    this.serviceContainer = new Container(this.options.container);
+    this.serviceContainer = new Container({
+      autoBindInjectable: true,
+    });
     this._bindLogger();
   }
 

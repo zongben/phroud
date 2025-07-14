@@ -16,12 +16,14 @@ export function Controller(
   };
 }
 
-export const Body = createParamDecorator("body");
-export const Query = createParamDecorator("query");
-export const Param = createParamDecorator("param");
-export const Locals = createParamDecorator("locals");
-export const Req = createParamDecorator("req");
-export const Res = createParamDecorator("res");
+export const FromBody = createParamDecorator("body");
+export const FromQuery = createParamDecorator("query");
+export const FromParam = createParamDecorator("param");
+export const FromLocals = createParamDecorator("locals");
+export const FromReq = createParamDecorator("req");
+export const FromRes = createParamDecorator("res");
+export const FromFile = createParamDecorator("file");
+export const FromFiles = createParamDecorator("files");
 
 export const Get = createRouteDecorator("get");
 export const Post = createRouteDecorator("post");

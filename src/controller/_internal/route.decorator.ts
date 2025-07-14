@@ -78,6 +78,12 @@ export function createRouteDecorator(method: RouteDefinition["method"]) {
               case "res":
                 rawValue = res;
                 break;
+              case "files":
+                rawValue = req.files;
+                break;
+              case "file":
+                rawValue = req.file;
+                break;
               default:
                 rawValue = undefined;
             }

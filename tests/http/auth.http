@@ -35,3 +35,14 @@ Content-Type: application/json
 
 GET {{host}}/file
 Content-Type: application/json
+
+###
+
+POST {{host}}/file
+Content-Type: multipart/form-data; boundary=b
+
+--b
+Content-Disposition: form-data; name="file"; filename="test.txt"
+
+< ./assets/test.txt
+--b--

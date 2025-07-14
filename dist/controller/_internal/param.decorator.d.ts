@@ -1,5 +1,5 @@
 export declare const PARAM_METADATA_KEY: unique symbol;
-type ParamSource = "body" | "query" | "param" | "locals" | "req" | "res";
+type ParamSource = "body" | "query" | "param" | "locals" | "req" | "res" | "files" | "file";
 export type ParamMetadata = {
     index: number;
     source: ParamSource;

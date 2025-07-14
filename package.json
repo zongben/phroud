@@ -1,7 +1,6 @@
 {
   "scripts": {
     "build": "npx tsc -p tsconfig.build.json",
-    "test": "jest",
     "test:server": "nodemon tests/server/main.ts"
   },
   "exports": {
@@ -49,6 +48,11 @@
       "import": "./dist/validator/index.js",
       "require": "./dist/validator/index.js",
       "types": "./dist/validator/index.d.ts"
+    },
+    "./uploader": {
+      "import": "./dist/uploader/index.js",
+      "require": "./dist/uploader/index.js",
+      "types": "./dist/uploader/index.d.ts"
     }
   },
   "devDependencies": {

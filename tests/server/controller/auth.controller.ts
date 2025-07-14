@@ -1,10 +1,11 @@
 import {
   Anonymous,
-  Body,
+  FromBody,
   Controller,
   Get,
   Post,
   Responses,
+  FromFile,
 } from "../../../src/controller";
 import { MediatedController } from "../../../src/mediator";
 import { matchResult } from "../../../src/result";
@@ -16,13 +17,18 @@ import { ErrorBody } from "./error-body";
 import { ErrorCodes } from "../application/error-codes";
 import { RegisterReq, RegisterRule } from "../contract/auth/register";
 import { RegisterCommand } from "../application/use-case/command/register/register.command";
+import { upload, uploader } from "../../../src/uploader";
+
+const storage: uploader.DiskStorageOptions = {
+  destination: `${process.cwd()}/tests/upload_test/`,
+};
 
 @TrackClassMethods()
 @Controller("/auth")
 @Anonymous()
 export class AuthController extends MediatedController {
   @Post("/register", validate(RegisterRule))
-  async register(@Body() req: RegisterReq) {
+  async register(@FromBody() req: RegisterReq) {
     const command = new RegisterCommand(req);
     const result = await this.dispatch(command);
     return matchResult(result, {
@@ -40,7 +46,7 @@ export class AuthController extends MediatedController {
   }
 
   @Post("/login", validate(LoginRule))
-  async login(@Body() req: LoginReq) {
+  async login(@FromBody() req: LoginReq) {
     const command = new LoginCommand(req);
     const result = await this.dispatch(command);
     return matchResult(result, {
@@ -81,7 +87,12 @@ export class AuthController extends MediatedController {
   }
 
   @Get("/file")
-  async file() {
+  async getFile() {
     return Responses.File("test.txt", `${process.cwd()}/tests/assets/test.txt`);
+  }
+
+  @Post("/file", upload(storage).single("file"))
+  async postFile(@FromFile() file: Express.Multer.File) {
+    return Responses.OK(file.filename);
   }
 }

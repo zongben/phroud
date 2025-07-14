@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import { IEnv } from "../public/interfaces";
 import { interfaces } from "inversify";
 import { ILogger } from "../../logger";
-import { AllowAnonymousPath } from "..";
 
 export class Env implements IEnv {
   private _env;
@@ -26,7 +25,6 @@ export class AppOptions {
   container: interfaces.ContainerOptions = {
     autoBindInjectable: true,
   };
-  allowAnonymousPath: AllowAnonymousPath[] = [];
 }
 
 export class Logger implements ILogger {

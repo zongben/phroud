@@ -14,6 +14,7 @@ import { IReqHandler, MediatorPipe } from "../../mediator";
 import { MediatorModule } from "../../mediator/_internal";
 import {
   CONTROLLER_METADATA,
+  isAnonymous,
   ROUTE_METADATA_KEY,
   RouteDefinition,
 } from "../../controller/_internal";
@@ -33,6 +34,7 @@ export class App {
   private _connections: Set<Socket>;
   private _exceptionHandler?: ExceptionHandler;
   private _notFoundHandler?: NotFoundHandler;
+  private _authGuard?: ExpressMiddleware;
   logger: ILogger;
   env!: IEnv;
   serviceContainer: Container;
@@ -44,14 +46,6 @@ export class App {
     this._connections = new Set<Socket>();
     this.logger = new Logger();
     this.serviceContainer = new Container(this.options.container);
-    this.options.allowAnonymousPath = this.options.allowAnonymousPath.map(
-      (p) => {
-        return {
-          path: `${this.options.routerPrefix}${p.path}`.toLowerCase(),
-          method: p.method.toUpperCase(),
-        };
-      },
-    );
     this._bindLogger();
   }
 
@@ -61,20 +55,20 @@ export class App {
     return new App(options);
   }
 
-  useDotEnv(path: string) {
+  setDotEnv(path: string) {
     this.env = new Env(path);
     this.serviceContainer.bind<IEnv>(APP_TYPES.IEnv).toConstantValue(this.env);
     this.logger.info(`Dotenv is loaded from ${path}`);
     return this;
   }
 
-  useLogger(logger: ILogger) {
+  setLogger(logger: ILogger) {
     this.logger = logger;
     this._bindLogger();
     return this;
   }
 
-  useMediator(
+  setMediator(
     handlers: Array<new (...args: any[]) => IReqHandler<any, any>>,
     pipeline?: {
       pre?: MediatorPipe[];
@@ -102,30 +96,49 @@ export class App {
         CONTROLLER_METADATA.PATH,
         ControllerClass,
       );
+
       const classMiddleware: ExpressMiddleware[] =
         Reflect.getMetadata(CONTROLLER_METADATA.MIDDLEWARE, ControllerClass) ||
         [];
 
       const instance = this.serviceContainer.resolve(ControllerClass);
+
       const routes: RouteDefinition[] =
         Reflect.getMetadata(ROUTE_METADATA_KEY, ControllerClass) || [];
 
       const router = Router({ mergeParams: true });
+
       for (const route of routes) {
+        let guard: ExpressMiddleware = (_req, _res, next) => {
+          next();
+        };
+        if (
+          this._authGuard &&
+          !isAnonymous(ControllerClass.prototype, route.handlerName)
+        ) {
+          guard = this._authGuard;
+        }
+
         const handler = instance[route.handlerName].bind(instance);
         const middleware = route.middleware || [];
+
         (router as any)[route.method](
           route.path,
-          ...[...classMiddleware, ...middleware],
+          guard,
+          ...classMiddleware,
+          ...middleware,
           handler,
         );
       }
+
       const fullMountPath = `${this.options.routerPrefix}/${controllerPath}`
         .replace(/\/+/g, "/")
         .toLowerCase();
+
       this.logger.debug(`${ControllerClass.name} Mounted at ${fullMountPath}`);
       this._app.use(fullMountPath, router);
     });
+
     return this;
   }
 
@@ -196,24 +209,8 @@ export class App {
     return this;
   }
 
-  useAuthGate(handler: ExpressMiddleware) {
-    this._app.use((req, res, next) => {
-      const isAnonymous = this.options.allowAnonymousPath.some((x) => {
-        const methodMatch = new RegExp(x.method).test(req.method);
-        const pathMatch = new RegExp(
-          "^" + x.path.replace(/\*/g, ".*").replace(/\//g, "\\/"),
-          "i",
-        ).test(req.path);
-        return methodMatch && pathMatch;
-      });
-
-      if (isAnonymous) {
-        next();
-      } else {
-        handler(req, res, next);
-      }
-    });
-    return this;
+  setAuthGuard(guard: ExpressMiddleware) {
+    this._authGuard = guard;
   }
 
   useJsonParser(options?: bodyParser.OptionsJson) {

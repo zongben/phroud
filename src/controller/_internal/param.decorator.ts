@@ -1,4 +1,4 @@
-export const PARAM_METADATA_KEY = Symbol("param_metadata");
+export const PARAM_METADATA_KEY = Symbol("empack:param_metadata");
 type ParamSource = "body" | "query" | "param" | "locals" | "req" | "res";
 
 export type ParamMetadata = {

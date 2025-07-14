@@ -10,21 +10,15 @@ import { JWT_TYPES } from "./infra/jwt";
 import { controllers } from "./controller";
 import { handlers } from "./application/handlers";
 
-const app = App.createBuilder((opt) => {
-  opt.allowAnonymousPath = [
-    {
-      path: "/auth/*",
-      method: "^GET|POST$",
-    },
-  ];
-});
-app.useDotEnv(path.join(__dirname, ".env.test"));
-app.useLogger(
+const app = App.createBuilder();
+app.setDotEnv(path.join(__dirname, ".env.test"));
+app.setLogger(
   new Logger(
     app.env.get("NODE_ENV") === "dev" ? LOGGER_LEVEL.DEBUG : LOGGER_LEVEL.INFO,
   ),
 );
-app.useMediator(handlers);
+app.setAuthGuard(jwtValidHandler(app.env.get("JWT_SECRET")));
+app.setMediator(handlers);
 app.loadModules(
   new JwTokenHelperModule(
     JWT_TYPES.ACCESSTOKEN,
@@ -52,7 +46,6 @@ app.useCors({
 });
 app.useJsonParser();
 app.useUrlEncodedParser({ extended: true });
-app.useAuthGate(jwtValidHandler(app.env.get("JWT_SECRET")));
 app.useTimerMiddleware((duration, ts, req, res) => {
   let msg = `Request: ${res.statusCode} ${req.method} ${req.originalUrl} - Duration: ${duration.toFixed(2)} ms`;
   const tsMsg = ts.map((span) => {

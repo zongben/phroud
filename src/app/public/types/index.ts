@@ -30,8 +30,3 @@ export type TimerHanlder = (
   req: Request,
   res: Response,
 ) => void;
-
-export type AllowAnonymousPath = {
-  path: string;
-  method: string;
-};

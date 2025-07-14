@@ -1,4 +1,5 @@
 import {
+    Anonymous,
   Body,
   Controller,
   Delete,
@@ -18,6 +19,7 @@ import { RegisterCommand } from "../application/use-case/command/register/regist
 
 @TrackClassMethods()
 @Controller("/auth")
+@Anonymous()
 export class AuthController extends MediatedController {
   @Post("/register", validate(RegisterRule))
   async register(@Body() req: RegisterReq) {

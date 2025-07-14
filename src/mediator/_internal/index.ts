@@ -10,12 +10,12 @@ import { MEDIATOR_TYPES, MediatorPipe } from "../public";
 import { Module } from "../../di";
 
 export const METADATA_KEY = {
-  handlerFor: Symbol.for("handleFor"),
+  handlerFor: Symbol.for("empack:handleFor"),
 };
 
 export const _MEDIATOR_TYPES = {
-  IMediator: Symbol.for("IMediator"),
-  IMediatorMap: Symbol.for("IMediatorMap"),
+  IMediator: Symbol.for("empack:IMediator"),
+  IMediatorMap: Symbol.for("empack:IMediatorMap"),
 };
 
 @injectable()

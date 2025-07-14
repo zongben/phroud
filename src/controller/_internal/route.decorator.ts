@@ -1,5 +1,11 @@
 import { NextFunction, Request, Response } from "express";
-import { BufferResponse, FileResponse, JsonResponse, ResponseWith, ResWith } from ".";
+import {
+  BufferResponse,
+  FileResponse,
+  JsonResponse,
+  ResponseWith,
+  ResWith,
+} from ".";
 import { ExpressMiddleware } from "../../app";
 import { PARAM_METADATA_KEY, ParamMetadata } from "./param.decorator";
 
@@ -17,7 +23,7 @@ export function applyWithData(res: Response, withData: ResponseWith = {}) {
   }
 }
 
-export const ROUTE_METADATA_KEY = Symbol("route_metadata");
+export const ROUTE_METADATA_KEY = Symbol("empack:route_metadata");
 
 export type RouteDefinition = {
   method: "get" | "post" | "put" | "delete" | "patch";

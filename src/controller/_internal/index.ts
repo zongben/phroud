@@ -2,9 +2,21 @@ import { CookieOptions } from "express";
 export * from "./param.decorator";
 export * from "./route.decorator";
 
+export const ANONYMOUS_KEY = Symbol("empack:anonymous");
+
+export function isAnonymous(prototype: any, methodName: string) {
+  if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype.constructor)) {
+    return true;
+  }
+  if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype, methodName)) {
+    return true;
+  }
+  return false;
+}
+
 export const CONTROLLER_METADATA = {
-  PATH: Symbol("controller_path"),
-  MIDDLEWARE: Symbol("controller_middleware"),
+  PATH: Symbol("empack:controller_path"),
+  MIDDLEWARE: Symbol("empack:controller_middleware"),
 };
 
 export abstract class ResWith {

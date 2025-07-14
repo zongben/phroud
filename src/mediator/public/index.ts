@@ -3,10 +3,10 @@ import { METADATA_KEY } from "../_internal";
 import { IRequest, ISender } from "./interfaces";
 
 export const MEDIATOR_TYPES = {
-  ISender: Symbol.for("ISender"),
-  IPublisher: Symbol.for("IPublisher"),
-  PrePipeline: Symbol.for("PrePipeline"),
-  PostPipeline: Symbol.for("PostPipeline"),
+  ISender: Symbol.for("empack:ISender"),
+  IPublisher: Symbol.for("empack:IPublisher"),
+  PrePipeline: Symbol.for("empack:PrePipeline"),
+  PostPipeline: Symbol.for("empack:PostPipeline"),
 };
 
 export function HandleFor<TReq>(

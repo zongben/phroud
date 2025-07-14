@@ -18,9 +18,7 @@ export function HandleFor<TReq>(
 }
 
 export abstract class MediatedController {
-  constructor(
-    @inject(MEDIATOR_TYPES.ISender) private readonly _sender: ISender,
-  ) {}
+  @inject(MEDIATOR_TYPES.ISender) private readonly _sender!: ISender;
 
   async dispatch<
     TReq extends IRequest<TRes>,

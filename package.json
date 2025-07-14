@@ -4,6 +4,53 @@
     "test": "jest",
     "test:server": "nodemon tests/server/main.ts"
   },
+  "exports": {
+    "./app": {
+      "import": "./dist/app/index.js",
+      "require": "./dist/app/index.js",
+      "types": "./dist/app/index.d.ts"
+    },
+    "./controller": {
+      "import": "./dist/controller/index.js",
+      "require": "./dist/controller/index.js",
+      "types": "./dist/controller/index.d.ts"
+    },
+    "./di": {
+      "import": "./dist/di/index.js",
+      "require": "./dist/di/index.js",
+      "types": "./dist/di/index.d.ts"
+    },
+    "./jwt": {
+      "import": "./dist/jwt/index.js",
+      "require": "./dist/jwt/index.js",
+      "types": "./dist/jwt/index.d.ts"
+    },
+    "./logger": {
+      "import": "./dist/logger/index.js",
+      "require": "./dist/logger/index.js",
+      "types": "./dist/logger/index.d.ts"
+    },
+    "./mediator": {
+      "import": "./dist/mediator/index.js",
+      "require": "./dist/mediator/index.js",
+      "types": "./dist/mediator/index.d.ts"
+    },
+    "./result": {
+      "import": "./dist/result/index.js",
+      "require": "./dist/result/index.js",
+      "types": "./dist/result/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils/index.js",
+      "require": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    },
+    "./validator": {
+      "import": "./dist/validator/index.js",
+      "require": "./dist/validator/index.js",
+      "types": "./dist/validator/index.d.ts"
+    }
+  },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
     "@types/bcrypt": "^5.0.2",

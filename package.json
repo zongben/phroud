@@ -1,8 +1,17 @@
 {
+  "name": "empack",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zongben/empack.git"
+  },
   "scripts": {
     "build": "npx tsc -p tsconfig.build.json",
     "test:server": "nodemon tests/server/main.ts"
   },
+  "files": [
+    "dist"
+  ],
   "exports": {
     "./app": {
       "import": "./dist/app/index.js",

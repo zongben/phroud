@@ -211,6 +211,7 @@ export class App {
 
   setAuthGuard(guard: ExpressMiddleware) {
     this._authGuard = guard;
+    return this;
   }
 
   useJsonParser(options?: bodyParser.OptionsJson) {

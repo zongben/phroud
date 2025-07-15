@@ -12,6 +12,12 @@ Empack also introduces an error-handling model inspired by Rust, encouraging dev
 
 The framework is designed to provide a fast and lightweight development experience.
 
+## Installation
+
+```bash
+npm i empack
+```
+
 ## Usage
 
 Empack currently supports `TypeScript only` as the programming language.

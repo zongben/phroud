@@ -1,25 +1,53 @@
 import { Container, inject, injectable, interfaces } from "inversify";
-import { IMediator, IMediatorMap } from "./interfaces";
 import {
+  IMediator,
+  IMediatorMap,
   INotification,
   IPublisher,
   IReqHandler,
+  IRequest,
   ISender,
-} from "../public/interfaces";
-import { MEDIATOR_TYPES, MediatorPipe } from "../public";
-import { Module } from "../../di";
+} from ".";
+import { Module } from "../di";
+
+const _MEDIATOR_TYPES = {
+  IMediator: Symbol.for("empack:IMediator"),
+  IMediatorMap: Symbol.for("empack:IMediatorMap"),
+};
+
+export const MEDIATOR_TYPES = {
+  ISender: Symbol.for("empack:ISender"),
+  IPublisher: Symbol.for("empack:IPublisher"),
+  PrePipeline: Symbol.for("empack:PrePipeline"),
+  PostPipeline: Symbol.for("empack:PostPipeline"),
+};
 
 export const METADATA_KEY = {
   handlerFor: Symbol.for("empack:handleFor"),
 };
 
-export const _MEDIATOR_TYPES = {
-  IMediator: Symbol.for("empack:IMediator"),
-  IMediatorMap: Symbol.for("empack:IMediatorMap"),
-};
+export abstract class MediatedController {
+  @inject(MEDIATOR_TYPES.ISender) private readonly _sender!: ISender;
+
+  async dispatch<
+    TReq extends IRequest<TRes>,
+    TRes = TReq extends IRequest<infer R> ? R : never,
+  >(req: TReq): Promise<TRes> {
+    return await this._sender.send(req);
+  }
+}
 
 @injectable()
-export class MediatorMap implements IMediatorMap {
+export abstract class MediatorPipe {
+  abstract handle(req: any, next: any): Promise<any>;
+}
+
+export abstract class Request<TResult> implements IRequest<TResult> {
+  __TYPE_ASSERT?: TResult;
+}
+
+@injectable()
+class MediatorMap implements IMediatorMap {
   private _map = new Map();
 
   set(req: any, handler: any) {
@@ -76,7 +104,7 @@ export class MediatorModule extends Module {
 }
 
 @injectable()
-export class Mediator implements IMediator {
+class Mediator implements IMediator {
   constructor(
     @inject("container") private readonly _container: Container,
     @inject(_MEDIATOR_TYPES.IMediatorMap)

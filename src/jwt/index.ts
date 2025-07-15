@@ -1,3 +1,3 @@
-export * from "./public";
-export * from "./public/types";
-export * from "./public/interfaces";
+export * from "./jwt";
+export * from "./interfaces";
+export * from "./types";

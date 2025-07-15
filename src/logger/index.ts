@@ -1,2 +1,2 @@
-export * from "./public";
-export * from "./public/interfaces";
+export * from "./logger";
+export * from "./interfaces";

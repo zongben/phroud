@@ -1,6 +1,8 @@
 import { performance } from "node:perf_hooks";
-import { timerStorage } from "../_internal";
 import { TimeSpan } from "./types";
+import { AsyncLocalStorage } from "node:async_hooks";
+
+export const timerStorage = new AsyncLocalStorage<Timer>();
 
 export class Timer {
   private _timeSpans: TimeSpan[] = [];

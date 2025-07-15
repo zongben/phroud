@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { TimeSpan } from "../../../utils";
+import { TimeSpan } from "../../utils";
 
 export type ExpressMiddleware = (
   req: Request,

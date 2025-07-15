@@ -1,4 +1,4 @@
-import { uploader } from "..";
+import { uploader } from ".";
 
 export function upload(storage?: uploader.DiskStorageOptions) {
   const engine = storage

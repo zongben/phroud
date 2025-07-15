@@ -1,2 +1,2 @@
-export * from "./public";
+export * from "./validator";
 export * from "express-validator";

@@ -3,7 +3,7 @@ import { interfaces } from "inversify";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { IJwTokenHelper } from "./interfaces";
 import { JwtHandler, JwtHandlerResult, JwTokenSettings } from "./types";
-import { Module } from "../../di";
+import { Module } from "../di";
 
 export function jwtValidHandler(secret: string, handler?: JwtHandler) {
   return (req: Request, res: Response, next: NextFunction) => {

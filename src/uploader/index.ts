@@ -1,4 +1,4 @@
 import uploader from "multer";
 
-export * from "./public";
+export * from "./uploader";
 export { uploader };

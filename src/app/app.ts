@@ -1,4 +1,5 @@
 import express, { Router, ErrorRequestHandler } from "express";
+import dotenv from "dotenv";
 import "reflect-metadata";
 import { Container } from "inversify";
 import http from "http";
@@ -6,27 +7,77 @@ import { Socket } from "net";
 import cors from "cors";
 import bodyParser from "body-parser";
 import onFinished from "on-finished";
-import { APP_TYPES } from ".";
-import { ILogger } from "../../logger";
-import { AppOptions, Env, Logger } from "../_internal";
+import { ILogger } from "../logger";
 import { IEnv } from "./interfaces";
-import { IReqHandler, MediatorPipe } from "../../mediator";
-import { MediatorModule } from "../../mediator/_internal";
-import {
-  CONTROLLER_METADATA,
-  isAnonymous,
-  ROUTE_METADATA_KEY,
-  RouteDefinition,
-} from "../../controller/_internal";
-import { Timer } from "../../utils";
-import { timerStorage } from "../../utils/_internal";
+import { IReqHandler, MediatorModule, MediatorPipe } from "../mediator";
 import {
   ExceptionHandler,
   ExpressMiddleware,
   NotFoundHandler,
   TimerHanlder,
 } from "./types";
-import { Module } from "../../di";
+import { Module } from "../di";
+import {
+  ANONYMOUS_KEY,
+  CONTROLLER_METADATA,
+  ROUTE_METADATA_KEY,
+  RouteDefinition,
+} from "../controller";
+import { Timer, timerStorage } from "../utils";
+
+function isAnonymous(prototype: any, methodName: string) {
+  if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype.constructor)) {
+    return true;
+  }
+  if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype, methodName)) {
+    return true;
+  }
+  return false;
+}
+
+class Env implements IEnv {
+  private _env;
+
+  constructor(path: string) {
+    dotenv.config({ path });
+    this._env = process.env;
+  }
+
+  get(key: string): any {
+    const value = this._env[key];
+    if (!value) {
+      throw new Error(`Environment variable ${key} is not defined`);
+    }
+    return value;
+  }
+}
+
+class Logger implements ILogger {
+  error(err: Error) {
+    console.error(err.stack || err.message);
+  }
+
+  warn(message: string) {
+    console.warn(message);
+  }
+
+  info(message: string) {
+    console.info(message);
+  }
+
+  debug(message: string) {
+    console.debug(message);
+  }
+}
+
+export class AppOptions {
+  routerPrefix: string = "/api";
+}
+
+export const APP_TYPES = {
+  IEnv: Symbol.for("empack:IEnv"),
+  ILogger: Symbol.for("empack:ILogger"),
+};
 
 export class App {
   private _app: express.Application;

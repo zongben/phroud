@@ -1,5 +1,3 @@
-import { compare } from "../../../../src/utils";
-
 interface UserProps {
   id: string;
   account: string;
@@ -25,6 +23,6 @@ export class UserRoot implements UserProps {
   }
 
   async isPasswordCorrect(password: string): Promise<boolean> {
-    return await compare(password, this.password);
+    return password === this.password;
   }
 }

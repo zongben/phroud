@@ -1,7 +1,7 @@
 import { inject } from "../../../../../../src/di";
 import { HandleFor, IReqHandler } from "../../../../../../src/mediator";
 import { ErrorReturn, OkReturn, Result } from "../../../../../../src/result";
-import { hash, TrackClassMethods, uuid } from "../../../../../../src/utils";
+import { TrackClassMethods, uuid } from "../../../../../../src/utils";
 import { UserRepository } from "../../../../infra/repository/user.repository";
 import { ErrorCodes } from "../../../error-codes";
 import { IUserRepository } from "../../../persistence/user.repository";
@@ -26,11 +26,10 @@ export class RegisterHandler
     if (isUserExist) {
       return new ErrorReturn(ErrorCodes.USER_ALREADY_EXISTS);
     }
-    const hashedPassword = await hash(req.password, 10);
     const userRoot = UserRoot.create({
       id: uuid(),
       account: req.account,
-      password: hashedPassword,
+      password: req.password,
       username: req.username,
     });
     const user = await this._userRepository.create(userRoot);

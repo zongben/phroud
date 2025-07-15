@@ -7,7 +7,7 @@
   },
   "scripts": {
     "build": "npx tsc -p tsconfig.build.json",
-    "copy": "cp ./package.json ./dist/package.json",
+    "copy": "cp ./package.json ./README.md ./LICENSE ./dist/",
     "pack": "npm run build && npm run copy && cd ./dist && npm pack",
     "pub": "npm run build && npm run copy && cd ./dist && npm publish",
     "test:server": "nodemon tests/server/main.ts"
@@ -59,7 +59,6 @@
     "typescript-eslint": "^8.26.1"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^5.1.0",

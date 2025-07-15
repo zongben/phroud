@@ -88,7 +88,7 @@ export class AuthController extends MediatedController {
 
   @Get("/file")
   async getFile() {
-    return Responses.File("test.txt", `${process.cwd()}/tests/assets/test.txt`);
+    return Responses.File("test.txt", `tests/assets/test.txt`);
   }
 
   @Post("/file", upload(storage).single("file"))

@@ -282,6 +282,10 @@ export class App {
     return this;
   }
 
+  useStatic(path: string) {
+    this._app.use(express.static(path));
+  }
+
   addHeaders(headers: Record<string, string>) {
     this._app.use((_req, res, next) => {
       for (const [key, value] of Object.entries(headers)) {

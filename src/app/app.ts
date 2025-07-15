@@ -1,7 +1,7 @@
 import express, { Router, ErrorRequestHandler } from "express";
 import dotenv from "dotenv";
 import "reflect-metadata";
-import { Container } from "inversify";
+import { Container, interfaces } from "inversify";
 import http from "http";
 import { Socket } from "net";
 import cors from "cors";
@@ -108,6 +108,22 @@ export class App {
     return new App(options);
   }
 
+  addSingletonScope(types: symbol, constructor: interfaces.Newable) {
+    this.serviceContainer.bind(types).to(constructor).inSingletonScope();
+  }
+
+  addRequestScope(types: symbol, constructor: interfaces.Newable) {
+    this.serviceContainer.bind(types).to(constructor).inRequestScope();
+  }
+
+  addTransientScope(types: symbol, constructor: interfaces.Newable) {
+    this.serviceContainer.bind(types).to(constructor).inTransientScope();
+  }
+
+  addConstant(types: symbol, instance: any) {
+    this.serviceContainer.bind(types).toConstantValue(instance);
+  }
+
   setDotEnv(path: string) {
     this.env = new Env(path);
     this.serviceContainer.bind<IEnv>(APP_TYPES.IEnv).toConstantValue(this.env);
@@ -143,7 +159,7 @@ export class App {
     return this;
   }
 
-  mapController(controllers: Array<new (...args: any[]) => any>) {
+  mapController(controllers: interfaces.Newable<any>[]) {
     controllers.forEach((ControllerClass) => {
       const controllerPath: string = Reflect.getMetadata(
         CONTROLLER_METADATA.PATH,

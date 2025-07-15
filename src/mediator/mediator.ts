@@ -90,9 +90,15 @@ export class MediatorModule extends Module {
     bind<IMediatorMap>(_MEDIATOR_TYPES.IMediatorMap).toConstantValue(
       this._mediatorMap,
     );
-    bind<IMediator>(_MEDIATOR_TYPES.IMediator).to(Mediator).inSingletonScope();
-    bind<ISender>(MEDIATOR_TYPES.ISender).to(Mediator).inSingletonScope();
-    bind<IPublisher>(MEDIATOR_TYPES.IPublisher).to(Mediator).inSingletonScope();
+    const mediator = new Mediator(
+      this.container,
+      this._mediatorMap,
+      this.pipeline?.pre ?? [],
+      this.pipeline?.post ?? [],
+    );
+    bind<IMediator>(_MEDIATOR_TYPES.IMediator).toConstantValue(mediator);
+    bind<ISender>(MEDIATOR_TYPES.ISender).toConstantValue(mediator);
+    bind<IPublisher>(MEDIATOR_TYPES.IPublisher).toConstantValue(mediator);
     bind<Container>("container").toConstantValue(this.container);
     bind<MediatorPipe[]>(MEDIATOR_TYPES.PrePipeline).toConstantValue(
       this.pipeline?.pre ?? [],
@@ -103,15 +109,11 @@ export class MediatorModule extends Module {
   }
 }
 
-@injectable()
 class Mediator implements IMediator {
   constructor(
-    @inject("container") private readonly _container: Container,
-    @inject(_MEDIATOR_TYPES.IMediatorMap)
+    private readonly _container: Container,
     private readonly _mediatorMap: IMediatorMap,
-    @inject(MEDIATOR_TYPES.PrePipeline)
     private readonly _prePipeline: any,
-    @inject(MEDIATOR_TYPES.PostPipeline)
     private readonly _postPipeline: any,
   ) {}
 

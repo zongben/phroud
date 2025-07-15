@@ -1,4 +1,4 @@
-import express, { Router, ErrorRequestHandler } from "express";
+import express, { Router, ErrorRequestHandler, NextFunction } from "express";
 import dotenv from "dotenv";
 import "reflect-metadata";
 import { Container, interfaces } from "inversify";
@@ -170,17 +170,25 @@ export class App {
         Reflect.getMetadata(CONTROLLER_METADATA.MIDDLEWARE, ControllerClass) ||
         [];
 
-      const instance = this.serviceContainer.resolve(ControllerClass);
-
       const routes: RouteDefinition[] =
         Reflect.getMetadata(ROUTE_METADATA_KEY, ControllerClass) || [];
 
       const router = Router({ mergeParams: true });
 
       for (const route of routes) {
+        const handler = async (
+          req: Request,
+          res: Response,
+          next: NextFunction,
+        ) => {
+          const instance = this.serviceContainer.resolve(ControllerClass);
+          await instance[route.handlerName].bind(instance)(req, res, next);
+        };
+
         let guard: ExpressMiddleware = (_req, _res, next) => {
           next();
         };
+
         if (
           this._authGuard &&
           !isAnonymous(ControllerClass.prototype, route.handlerName)
@@ -188,7 +196,6 @@ export class App {
           guard = this._authGuard;
         }
 
-        const handler = instance[route.handlerName].bind(instance);
         const middleware = route.middleware || [];
 
         (router as any)[route.method](

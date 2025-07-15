@@ -3,12 +3,39 @@
   "version": "0.0.1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zongben/empack.git"
+    "url": "git+https://github.com/zongben/empack.git"
   },
   "scripts": {
     "build": "npx tsc -p tsconfig.build.json",
+    "copy": "cp ./package.json ./dist/package.json",
+    "pack": "npm run build && npm run copy && cd ./dist && npm pack",
+    "pub": "npm run build && npm run copy && cd ./dist && npm publish",
     "test:server": "nodemon tests/server/main.ts"
   },
+  "exports": {
+    "./app": "./app/index.js",
+    "./controller": "./controller/index.js",
+    "./di": "./di/index.js",
+    "./jwt": "./jwt/index.js",
+    "./logger": "./logger/index.js",
+    "./mediator": "./mediator/index.js",
+    "./result": "./result/index.js",
+    "./uploader": "./uploader/index.js",
+    "./utils": "./utils/index.js",
+    "./validator": "./validator/index.js"
+  },
+  "files": [
+    "./app",
+    "./controller",
+    "./di",
+    "./jwt",
+    "./logger",
+    "./mediator",
+    "./result",
+    "./uploader",
+    "./utils",
+    "./validator"
+  ],
   "devDependencies": {
     "@eslint/js": "^9.22.0",
     "@types/bcrypt": "^5.0.2",

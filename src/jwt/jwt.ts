@@ -1,9 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
-import { interfaces } from "inversify";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { IJwTokenHelper } from "./interfaces";
 import { JwtHandler, JwtHandlerResult, JwTokenSettings } from "./types";
-import { Module } from "../di";
+import { ContainerModuleLoadOptions, Module } from "../di";
 
 export function jwtValidHandler(secret: string, handler?: JwtHandler) {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -71,7 +70,7 @@ export class JwTokenHelperModule extends Module {
     super();
   }
 
-  protected bindModule(bind: interfaces.Bind) {
-    bind(this.symbol).toConstantValue(this.jwtHelper);
+  protected bindModule(options: ContainerModuleLoadOptions) {
+    options.bind(this.symbol).toConstantValue(this.jwtHelper);
   }
 }

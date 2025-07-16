@@ -1,4 +1,9 @@
-import { Container, inject, injectable, interfaces } from "inversify";
+import {
+  Container,
+  ContainerModuleLoadOptions,
+  inject,
+  injectable,
+} from "inversify";
 import {
   IMediator,
   IMediatorMap,
@@ -86,26 +91,30 @@ export class MediatorModule extends Module {
     this._mediatorMap = new MediatorMap().loadFromHandlers(handlers);
   }
 
-  protected bindModule(bind: interfaces.Bind): void {
-    bind<IMediatorMap>(_MEDIATOR_TYPES.IMediatorMap).toConstantValue(
-      this._mediatorMap,
-    );
+  protected bindModule(options: ContainerModuleLoadOptions): void {
+    options
+      .bind<IMediatorMap>(_MEDIATOR_TYPES.IMediatorMap)
+      .toConstantValue(this._mediatorMap);
     const mediator = new Mediator(
       this.container,
       this._mediatorMap,
       this.pipeline?.pre ?? [],
       this.pipeline?.post ?? [],
     );
-    bind<IMediator>(_MEDIATOR_TYPES.IMediator).toConstantValue(mediator);
-    bind<ISender>(MEDIATOR_TYPES.ISender).toConstantValue(mediator);
-    bind<IPublisher>(MEDIATOR_TYPES.IPublisher).toConstantValue(mediator);
-    bind<Container>("container").toConstantValue(this.container);
-    bind<MediatorPipe[]>(MEDIATOR_TYPES.PrePipeline).toConstantValue(
-      this.pipeline?.pre ?? [],
-    );
-    bind<MediatorPipe[]>(MEDIATOR_TYPES.PostPipeline).toConstantValue(
-      this.pipeline?.post ?? [],
-    );
+    options
+      .bind<IMediator>(_MEDIATOR_TYPES.IMediator)
+      .toConstantValue(mediator);
+    options.bind<ISender>(MEDIATOR_TYPES.ISender).toConstantValue(mediator);
+    options
+      .bind<IPublisher>(MEDIATOR_TYPES.IPublisher)
+      .toConstantValue(mediator);
+    options.bind<Container>("container").toConstantValue(this.container);
+    options
+      .bind<MediatorPipe[]>(MEDIATOR_TYPES.PrePipeline)
+      .toConstantValue(this.pipeline?.pre ?? []);
+    options
+      .bind<MediatorPipe[]>(MEDIATOR_TYPES.PostPipeline)
+      .toConstantValue(this.pipeline?.post ?? []);
   }
 }
 
@@ -125,7 +134,7 @@ class Mediator implements IMediator {
     const next = async (pipe: any): Promise<any> => {
       if (index < pipelines.length) {
         const PipelineClass = pipelines[index++];
-        const pipeline = this._container.resolve(PipelineClass);
+        const pipeline = this._container.get(PipelineClass);
         return await pipeline.handle(pipe, (nextInput: any) => next(nextInput));
       } else {
         return pipe;
@@ -143,14 +152,14 @@ class Mediator implements IMediator {
     }
 
     return await this.processPipeline(req, this._prePipeline)
-      .then((input) => this._container.resolve(handler).handle(input))
+      .then((input) => this._container.get(handler).handle(input))
       .then((output) => this.processPipeline(output, this._postPipeline));
   }
 
   async publish<T extends INotification<T>>(event: T): Promise<void> {
     await Promise.all(
       event.getSubscribers().map(async (handler) => {
-        const handlerInstance = this._container.resolve(handler);
+        const handlerInstance = this._container.get(handler);
         await handlerInstance.handle(event);
       }),
     );

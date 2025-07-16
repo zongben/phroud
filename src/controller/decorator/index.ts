@@ -1,3 +1,4 @@
+import { injectable, injectFromBase } from "inversify";
 import { BufferResponse, FileResponse, JsonResponse, ResWith } from "..";
 import { Request, Response, NextFunction } from "../../app";
 import { ExpressMiddleware } from "../../app";
@@ -23,6 +24,8 @@ export function Controller(
   return (target) => {
     Reflect.defineMetadata(CONTROLLER_METADATA.PATH, path, target);
     Reflect.defineMetadata(CONTROLLER_METADATA.MIDDLEWARE, middleware, target);
+    injectable()(target);
+    injectFromBase()(target);
   };
 }
 

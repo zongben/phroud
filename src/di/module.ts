@@ -1,11 +1,11 @@
-import { ContainerModule, interfaces } from "inversify";
+import { ContainerModule, ContainerModuleLoadOptions } from "inversify";
 
 export abstract class Module {
-  protected abstract bindModule(bind: interfaces.Bind): void;
+  protected abstract bindModule(options: ContainerModuleLoadOptions): void;
 
   getModule(): ContainerModule {
-    return new ContainerModule((bind) => {
-      this.bindModule(bind);
+    return new ContainerModule((options) => {
+      this.bindModule(options);
     });
   }
 }

@@ -1,7 +1,7 @@
 import express, { Router, ErrorRequestHandler, NextFunction } from "express";
 import dotenv from "dotenv";
 import "reflect-metadata";
-import { Container, interfaces } from "inversify";
+import { Container, Newable } from "inversify";
 import http from "http";
 import { Socket } from "net";
 import cors from "cors";
@@ -97,7 +97,7 @@ export class App {
     this._connections = new Set<Socket>();
     this.logger = new Logger();
     this.serviceContainer = new Container({
-      autoBindInjectable: true,
+      autobind: true,
     });
     this._bindLogger();
   }
@@ -108,15 +108,15 @@ export class App {
     return new App(options);
   }
 
-  addSingletonScope(types: symbol, constructor: interfaces.Newable) {
+  addSingletonScope(types: symbol, constructor: Newable) {
     this.serviceContainer.bind(types).to(constructor).inSingletonScope();
   }
 
-  addRequestScope(types: symbol, constructor: interfaces.Newable) {
+  addRequestScope(types: symbol, constructor: Newable) {
     this.serviceContainer.bind(types).to(constructor).inRequestScope();
   }
 
-  addTransientScope(types: symbol, constructor: interfaces.Newable) {
+  addTransientScope(types: symbol, constructor: Newable) {
     this.serviceContainer.bind(types).to(constructor).inTransientScope();
   }
 
@@ -159,7 +159,7 @@ export class App {
     return this;
   }
 
-  mapController(controllers: interfaces.Newable<any>[]) {
+  mapController(controllers: Newable<any>[]) {
     controllers.forEach((ControllerClass) => {
       const controllerPath: string = Reflect.getMetadata(
         CONTROLLER_METADATA.PATH,
@@ -181,7 +181,7 @@ export class App {
           res: Response,
           next: NextFunction,
         ) => {
-          const instance = this.serviceContainer.resolve(ControllerClass);
+          const instance = this.serviceContainer.get(ControllerClass);
           await instance[route.handlerName].bind(instance)(req, res, next);
         };
 

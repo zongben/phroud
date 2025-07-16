@@ -1,2 +1,2 @@
-export * from "inversify";
+export { inject, injectable, injectFromBase } from "inversify";
 export * from "./module";

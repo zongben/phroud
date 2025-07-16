@@ -2,7 +2,6 @@ import type { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { IJwTokenHelper } from "./interfaces";
 import { JwtHandler, JwtHandlerResult, JwTokenSettings } from "./types";
-import { ContainerModuleLoadOptions, Module } from "../di";
 
 export function jwtValidHandler(secret: string, handler?: JwtHandler) {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -59,18 +58,5 @@ export class JwTokenHelper implements IJwTokenHelper {
     } catch {
       return null;
     }
-  }
-}
-
-export class JwTokenHelperModule extends Module {
-  constructor(
-    private symbol: symbol,
-    private jwtHelper: IJwTokenHelper,
-  ) {
-    super();
-  }
-
-  protected bindModule(options: ContainerModuleLoadOptions) {
-    options.bind(this.symbol).toConstantValue(this.jwtHelper);
   }
 }

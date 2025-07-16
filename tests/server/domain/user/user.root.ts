@@ -5,6 +5,11 @@ interface UserProps {
   username: string;
 }
 
+export const ScopeTestSymbol = Symbol.for("scope_test");
+export class ScopeTest {
+  index: number = 0;
+}
+
 export class UserRoot implements UserProps {
   id: string;
   account: string;

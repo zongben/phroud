@@ -1,4 +1,2 @@
-export const JWT_TYPES = {
-  ACCESSTOKEN: Symbol.for("ACCESSTOKEN"),
-  REFRESHTOKEN: Symbol.for("REFRESHTOKEN"),
-};
+export const AccessTokenSymbol = Symbol.for("ACCESSTOKEN");
+export const RefreshTokenSymbol = Symbol.for("REFRESHTOKEN");

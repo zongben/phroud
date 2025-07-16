@@ -7,7 +7,11 @@ import { ErrorCodes } from "../../../error-codes";
 import { IUserRepository } from "../../../persistence/user.repository";
 import { RegisterCommand } from "./register.command";
 import { RegisterError, RegisterResult } from "./register.result";
-import { UserRoot } from "../../../../domain/user/user.root";
+import {
+  ScopeTest,
+  ScopeTestSymbol,
+  UserRoot,
+} from "../../../../domain/user/user.root";
 
 @HandleFor(RegisterCommand)
 @TrackClassMethods()
@@ -16,11 +20,14 @@ export class RegisterHandler
 {
   constructor(
     @inject(UserRepository) private readonly _userRepository: IUserRepository,
+    @inject(ScopeTestSymbol) private readonly _scopeTest: ScopeTest,
   ) {}
 
   async handle(
     req: RegisterCommand,
   ): Promise<Result<RegisterResult, RegisterError>> {
+    console.log("after mediator: ", this._scopeTest.index);
+
     const isUserExist =
       (await this._userRepository.getByAccount(req.account)) !== null;
     if (isUserExist) {

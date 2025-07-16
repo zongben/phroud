@@ -18,6 +18,8 @@ import { ErrorCodes } from "../application/error-codes";
 import { RegisterReq, RegisterRule } from "../contract/auth/register";
 import { RegisterCommand } from "../application/use-case/command/register/register.command";
 import { upload, uploader } from "../../../src/uploader";
+import { inject } from "inversify";
+import { ScopeTest, ScopeTestSymbol } from "../domain/user/user.root";
 
 const storage: uploader.DiskStorageOptions = {
   destination: `${process.cwd()}/tests/upload_test/`,
@@ -27,8 +29,16 @@ const storage: uploader.DiskStorageOptions = {
 @Controller("/auth")
 @Anonymous()
 export class AuthController extends MediatedController {
+  constructor(@inject(ScopeTestSymbol) private readonly _scopeTest: ScopeTest) {
+    super();
+  }
+
   @Post("/register", validate(RegisterRule))
   async register(@FromBody() req: RegisterReq) {
+    console.log("from controller: ", this._scopeTest.index);
+    this._scopeTest.index++;
+    console.log("and add one in controller: ", this._scopeTest.index);
+
     const command = new RegisterCommand(req);
     const result = await this.dispatch(command);
     return matchResult(result, {

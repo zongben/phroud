@@ -3,7 +3,7 @@ import { IJwTokenHelper } from "../../../../../../src/jwt";
 import { HandleFor, IReqHandler } from "../../../../../../src/mediator";
 import { ErrorReturn, OkReturn, Result } from "../../../../../../src/result";
 import { TrackClassMethods } from "../../../../../../src/utils";
-import { JWT_TYPES } from "../../../../infra/jwt";
+import { AccessTokenSymbol, RefreshTokenSymbol } from "../../../../infra/jwt";
 import { UserRepository } from "../../../../infra/repository/user.repository";
 import { ErrorCodes } from "../../../error-codes";
 import { IUserRepository } from "../../../persistence/user.repository";
@@ -18,9 +18,9 @@ export class LoginHandler
   constructor(
     // @inject(MEDIATOR_TYPES.IPublisher) private _publisher: IPublisher,
     @inject(UserRepository) private _userRepository: IUserRepository,
-    @inject(JWT_TYPES.ACCESSTOKEN)
+    @inject(AccessTokenSymbol)
     private _accessTokenHelper: IJwTokenHelper,
-    @inject(JWT_TYPES.REFRESHTOKEN)
+    @inject(RefreshTokenSymbol)
     private _refreshTokenHelper: IJwTokenHelper,
   ) {}
 

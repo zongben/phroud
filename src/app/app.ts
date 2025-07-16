@@ -16,7 +16,6 @@ import {
   NotFoundHandler,
   TimerHanlder,
 } from "./types";
-import { Module } from "../di";
 import {
   ANONYMOUS_KEY,
   CONTROLLER_METADATA,
@@ -25,6 +24,11 @@ import {
 } from "../controller";
 import { Timer, timerStorage } from "../utils";
 import { IEnvSymbol, ILoggerSymbol } from "./symbols";
+
+type PreRequestScope = {
+  type: symbol;
+  constructor: Newable;
+};
 
 function isAnonymous(prototype: any, methodName: string) {
   if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype.constructor)) {
@@ -82,6 +86,9 @@ export class App {
   private _exceptionHandler?: ExceptionHandler;
   private _notFoundHandler?: NotFoundHandler;
   private _authGuard?: ExpressMiddleware;
+  private _preRequestScope: PreRequestScope[] = [];
+  private _mediatorHandlers: any[] = [];
+  private _mediatorPipeLine: any;
   logger: ILogger;
   env!: IEnv;
   serviceContainer: Container;
@@ -104,16 +111,22 @@ export class App {
     return new App(options);
   }
 
-  addSingletonScope(types: symbol, constructor: Newable) {
-    this.serviceContainer.bind(types).to(constructor).inSingletonScope();
+  addSingletonScope(type: symbol, constructor: Newable) {
+    this.serviceContainer.bind(type).to(constructor).inSingletonScope();
+    return this;
   }
 
-  addRequestScope(types: symbol, constructor: Newable) {
-    this.serviceContainer.bind(types).to(constructor).inRequestScope();
+  addRequestScope(type: symbol, constructor: Newable) {
+    this._preRequestScope.push({
+      type,
+      constructor,
+    });
+    return this;
   }
 
-  addTransientScope(types: symbol, constructor: Newable) {
-    this.serviceContainer.bind(types).to(constructor).inTransientScope();
+  addTransientScope(type: symbol, constructor: Newable) {
+    this.serviceContainer.bind(type).to(constructor).inTransientScope();
+    return this;
   }
 
   addConstant(types: symbol, instance: any) {
@@ -133,6 +146,24 @@ export class App {
     return this;
   }
 
+  private _createRequestContainer(): Container {
+    const child = new Container({
+      parent: this.serviceContainer,
+      autobind: true,
+    });
+    this._preRequestScope.forEach(({ type, constructor }) => {
+      child.bind(type).to(constructor).inSingletonScope();
+    });
+    child.load(
+      new MediatorModule(
+        child,
+        this._mediatorHandlers,
+        this._mediatorPipeLine,
+      ).getModule(),
+    );
+    return child;
+  }
+
   setMediator(
     handlers: Array<new (...args: any[]) => IReqHandler<any, any>>,
     pipeline?: {
@@ -140,20 +171,19 @@ export class App {
       post?: MediatorPipe[];
     },
   ) {
-    this.serviceContainer.load(
-      new MediatorModule(this.serviceContainer, handlers, pipeline).getModule(),
-    );
+    this._mediatorHandlers = handlers;
+    this._mediatorPipeLine = pipeline;
     return this;
   }
 
-  loadModules(...modules: Module[]) {
-    this.serviceContainer.load(
-      ...modules.map((m) => {
-        return m.getModule();
-      }),
-    );
-    return this;
-  }
+  // loadModules(...modules: Module[]) {
+  //   this.serviceContainer.load(
+  //     ...modules.map((m) => {
+  //       return m.getModule();
+  //     }),
+  //   );
+  //   return this;
+  // }
 
   mapController(controllers: Newable<any>[]) {
     controllers.forEach((ControllerClass) => {
@@ -177,7 +207,8 @@ export class App {
           res: Response,
           next: NextFunction,
         ) => {
-          const instance = this.serviceContainer.get(ControllerClass);
+          const childContainer = this._createRequestContainer();
+          const instance = childContainer.get(ControllerClass);
           await instance[route.handlerName].bind(instance)(req, res, next);
         };
 

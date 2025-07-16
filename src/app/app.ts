@@ -25,11 +25,6 @@ import {
 import { Timer, timerStorage } from "../utils";
 import { IEnvSymbol, ILoggerSymbol } from "./symbols";
 
-type PreRequestScope = {
-  type: symbol;
-  constructor: Newable;
-};
-
 function isAnonymous(prototype: any, methodName: string) {
   if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype.constructor)) {
     return true;
@@ -86,7 +81,7 @@ export class App {
   private _exceptionHandler?: ExceptionHandler;
   private _notFoundHandler?: NotFoundHandler;
   private _authGuard?: ExpressMiddleware;
-  private _preRequestScope: PreRequestScope[] = [];
+  private _preRequestScope = new Map<symbol, Newable>();
   private _mediatorHandlers: any[] = [];
   private _mediatorPipeLine: any;
   logger: ILogger;
@@ -117,10 +112,7 @@ export class App {
   }
 
   addRequestScope(type: symbol, constructor: Newable) {
-    this._preRequestScope.push({
-      type,
-      constructor,
-    });
+    this._preRequestScope.set(type, constructor);
     return this;
   }
 
@@ -151,9 +143,23 @@ export class App {
       parent: this.serviceContainer,
       autobind: true,
     });
-    this._preRequestScope.forEach(({ type, constructor }) => {
-      child.bind(type).to(constructor).inSingletonScope();
-    });
+
+    for (const [symbol, ctor] of this._preRequestScope) {
+      child.bind(symbol).to(ctor).inSingletonScope();
+    }
+
+    // AI advice
+    // for (const [symbol, ctor] of this._preRequestScope) {
+    //   const instanceKey = Symbol(`__lazy_${String(symbol)}`);
+    //   child.bind(symbol).toDynamicValue(() => {
+    //     const cached = (child as any)[instanceKey];
+    //     if (cached) return cached;
+    //     const instance = this.serviceContainer.get(ctor) as any;
+    //     (child as any)[instanceKey] = instance;
+    //     return instance;
+    //   });
+    // }
+
     child.load(
       new MediatorModule(
         child,
@@ -192,6 +198,12 @@ export class App {
         ControllerClass,
       );
 
+      if (!controllerPath) {
+        throw new Error(
+          `Controller ${ControllerClass.name} is missing @Controller decorator`,
+        );
+      }
+
       const classMiddleware: ExpressMiddleware[] =
         Reflect.getMetadata(CONTROLLER_METADATA.MIDDLEWARE, ControllerClass) ||
         [];
@@ -209,7 +221,7 @@ export class App {
         ) => {
           const childContainer = this._createRequestContainer();
           const instance = childContainer.get(ControllerClass);
-          await instance[route.handlerName].bind(instance)(req, res, next);
+          await instance[route.handlerName](req, res, next);
         };
 
         let guard: ExpressMiddleware = (_req, _res, next) => {
@@ -334,6 +346,7 @@ export class App {
 
   useStatic(path: string) {
     this._app.use(express.static(path));
+    return this;
   }
 
   addHeaders(headers: Record<string, string>) {

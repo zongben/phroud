@@ -24,6 +24,7 @@ import {
   RouteDefinition,
 } from "../controller";
 import { Timer, timerStorage } from "../utils";
+import { IEnvSymbol, ILoggerSymbol } from "./symbols";
 
 function isAnonymous(prototype: any, methodName: string) {
   if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype.constructor)) {
@@ -74,11 +75,6 @@ export class AppOptions {
   routerPrefix: string = "/api";
 }
 
-export const APP_TYPES = {
-  IEnv: Symbol.for("empack:IEnv"),
-  ILogger: Symbol.for("empack:ILogger"),
-};
-
 export class App {
   private _app: express.Application;
   private _server?: http.Server;
@@ -126,7 +122,7 @@ export class App {
 
   setDotEnv(path: string) {
     this.env = new Env(path);
-    this.serviceContainer.bind<IEnv>(APP_TYPES.IEnv).toConstantValue(this.env);
+    this.serviceContainer.bind<IEnv>(IEnvSymbol).toConstantValue(this.env);
     this.logger.info(`Dotenv is loaded from ${path}`);
     return this;
   }
@@ -340,7 +336,7 @@ export class App {
 
   private _bindLogger() {
     this.serviceContainer
-      .bind<ILogger>(APP_TYPES.ILogger)
+      .bind<ILogger>(ILoggerSymbol)
       .toConstantValue(this.logger);
   }
 

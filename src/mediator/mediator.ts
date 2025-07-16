@@ -6,18 +6,14 @@ import {
 } from "inversify";
 import { INotification, IPublisher, IReqHandler, IRequest, ISender } from ".";
 import { Module } from "../di";
-
-export const MEDIATOR_TYPES = {
-  ISender: Symbol.for("empack:ISender"),
-  IPublisher: Symbol.for("empack:IPublisher"),
-};
+import { IPublisherSymbol, ISenderSymbol } from ".";
 
 export const METADATA_KEY = {
   handlerFor: Symbol.for("empack:handleFor"),
 };
 
 export abstract class MediatedController {
-  @inject(MEDIATOR_TYPES.ISender) private readonly _sender!: ISender;
+  @inject(ISenderSymbol) private readonly _sender!: ISender;
 
   async dispatch<
     TReq extends IRequest<TRes>,
@@ -82,10 +78,8 @@ export class MediatorModule extends Module {
       this.pipeline?.pre ?? [],
       this.pipeline?.post ?? [],
     );
-    options.bind<ISender>(MEDIATOR_TYPES.ISender).toConstantValue(mediator);
-    options
-      .bind<IPublisher>(MEDIATOR_TYPES.IPublisher)
-      .toConstantValue(mediator);
+    options.bind<ISender>(ISenderSymbol).toConstantValue(mediator);
+    options.bind<IPublisher>(IPublisherSymbol).toConstantValue(mediator);
   }
 }
 

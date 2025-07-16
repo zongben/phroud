@@ -4,27 +4,12 @@ import {
   inject,
   injectable,
 } from "inversify";
-import {
-  IMediator,
-  IMediatorMap,
-  INotification,
-  IPublisher,
-  IReqHandler,
-  IRequest,
-  ISender,
-} from ".";
+import { INotification, IPublisher, IReqHandler, IRequest, ISender } from ".";
 import { Module } from "../di";
-
-const _MEDIATOR_TYPES = {
-  IMediator: Symbol.for("empack:IMediator"),
-  IMediatorMap: Symbol.for("empack:IMediatorMap"),
-};
 
 export const MEDIATOR_TYPES = {
   ISender: Symbol.for("empack:ISender"),
   IPublisher: Symbol.for("empack:IPublisher"),
-  PrePipeline: Symbol.for("empack:PrePipeline"),
-  PostPipeline: Symbol.for("empack:PostPipeline"),
 };
 
 export const METADATA_KEY = {
@@ -51,8 +36,7 @@ export abstract class Request<TResult> implements IRequest<TResult> {
   __TYPE_ASSERT?: TResult;
 }
 
-@injectable()
-class MediatorMap implements IMediatorMap {
+class MediatorMap {
   private _map = new Map();
 
   set(req: any, handler: any) {
@@ -92,36 +76,23 @@ export class MediatorModule extends Module {
   }
 
   protected bindModule(options: ContainerModuleLoadOptions): void {
-    options
-      .bind<IMediatorMap>(_MEDIATOR_TYPES.IMediatorMap)
-      .toConstantValue(this._mediatorMap);
     const mediator = new Mediator(
       this.container,
       this._mediatorMap,
       this.pipeline?.pre ?? [],
       this.pipeline?.post ?? [],
     );
-    options
-      .bind<IMediator>(_MEDIATOR_TYPES.IMediator)
-      .toConstantValue(mediator);
     options.bind<ISender>(MEDIATOR_TYPES.ISender).toConstantValue(mediator);
     options
       .bind<IPublisher>(MEDIATOR_TYPES.IPublisher)
       .toConstantValue(mediator);
-    options.bind<Container>("container").toConstantValue(this.container);
-    options
-      .bind<MediatorPipe[]>(MEDIATOR_TYPES.PrePipeline)
-      .toConstantValue(this.pipeline?.pre ?? []);
-    options
-      .bind<MediatorPipe[]>(MEDIATOR_TYPES.PostPipeline)
-      .toConstantValue(this.pipeline?.post ?? []);
   }
 }
 
-class Mediator implements IMediator {
+class Mediator implements ISender, IPublisher {
   constructor(
     private readonly _container: Container,
-    private readonly _mediatorMap: IMediatorMap,
+    private readonly _mediatorMap: MediatorMap,
     private readonly _prePipeline: any,
     private readonly _postPipeline: any,
   ) {}

@@ -26,10 +26,3 @@ export interface INotification<T> {
 export interface IEventHandler<T> {
   handle(event: T): Promise<void>;
 }
-
-export interface IMediatorMap {
-  set(req: any, handler: any): void;
-  get(req: any): any;
-}
-
-export interface IMediator extends ISender, IPublisher {}

@@ -9,7 +9,13 @@ import bodyParser from "body-parser";
 import onFinished from "on-finished";
 import { ILogger } from "../logger";
 import { IEnv } from "./interfaces";
-import { IReqHandler, MediatorModule, MediatorPipe } from "../mediator";
+import {
+  IPublisherSymbol,
+  IReqHandler,
+  ISenderSymbol,
+  Mediator,
+  MediatorPipe,
+} from "../mediator";
 import {
   ExceptionHandler,
   ExpressMiddleware,
@@ -24,6 +30,7 @@ import {
 } from "../controller";
 import { Timer, timerStorage } from "../utils";
 import { IEnvSymbol, ILoggerSymbol } from "./symbols";
+import { Module } from "../di";
 
 function isAnonymous(prototype: any, methodName: string) {
   if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype.constructor)) {
@@ -82,8 +89,11 @@ export class App {
   private _notFoundHandler?: NotFoundHandler;
   private _authGuard?: ExpressMiddleware;
   private _preRequestScope = new Map<symbol, Newable>();
-  private _mediatorHandlers: any[] = [];
-  private _mediatorPipeLine: any;
+  private _mediatorHandlers: Newable<any>[] = [];
+  private _mediatorPipeLine?: {
+    pre?: Newable<MediatorPipe>[];
+    post?: Newable<MediatorPipe>[];
+  };
   logger: ILogger;
   env!: IEnv;
   serviceContainer: Container;
@@ -149,48 +159,55 @@ export class App {
       child.bind(symbol).to(ctor).inSingletonScope();
     }
 
-    // AI advice
-    // for (const [symbol, ctor] of this._preRequestScope) {
-    //   const instanceKey = Symbol(`__lazy_${String(symbol)}`);
-    //   child.bind(symbol).toDynamicValue(() => {
-    //     const cached = (child as any)[instanceKey];
-    //     if (cached) return cached;
-    //     const instance = this.serviceContainer.get(ctor) as any;
-    //     (child as any)[instanceKey] = instance;
-    //     return instance;
-    //   });
-    // }
-
-    child.load(
-      new MediatorModule(
-        child,
-        this._mediatorHandlers,
-        this._mediatorPipeLine,
-      ).getModule(),
+    const mediator = new Mediator(
+      child,
+      this._mediatorHandlers,
+      this._mediatorPipeLine,
     );
+    child.bind(ISenderSymbol).toConstantValue(mediator);
+    child.bind(IPublisherSymbol).toConstantValue(mediator);
+
     return child;
   }
 
   setMediator(
     handlers: Array<new (...args: any[]) => IReqHandler<any, any>>,
     pipeline?: {
-      pre?: MediatorPipe[];
-      post?: MediatorPipe[];
+      pre?: Newable<MediatorPipe>[];
+      post?: Newable<MediatorPipe>[];
     },
   ) {
     this._mediatorHandlers = handlers;
-    this._mediatorPipeLine = pipeline;
+    if (pipeline) {
+      this._mediatorPipeLine = pipeline;
+    }
     return this;
   }
 
-  // loadModules(...modules: Module[]) {
-  //   this.serviceContainer.load(
-  //     ...modules.map((m) => {
-  //       return m.getModule();
-  //     }),
-  //   );
-  //   return this;
-  // }
+  loadModules(...modules: Module[]) {
+    for (const mod of modules) {
+      mod.loadModule();
+
+      for (const entry of mod.getBindings()) {
+        const { type, constructor, scope } = entry;
+        switch (scope) {
+          case "singleton":
+            this.serviceContainer.bind(type).to(constructor).inSingletonScope();
+            break;
+          case "request":
+            this.addRequestScope(type, constructor);
+            break;
+          case "transient":
+            this.serviceContainer.bind(type).to(constructor).inTransientScope();
+            break;
+          case "constant":
+            this.serviceContainer.bind(type).toConstantValue(constructor);
+            break;
+        }
+      }
+    }
+    return this;
+  }
 
   mapController(controllers: Newable<any>[]) {
     controllers.forEach((ControllerClass) => {

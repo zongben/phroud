@@ -1,12 +1,5 @@
-import {
-  Container,
-  ContainerModuleLoadOptions,
-  inject,
-  injectable,
-} from "inversify";
-import { INotification, IPublisher, IReqHandler, IRequest, ISender } from ".";
-import { Module } from "../di";
-import { IPublisherSymbol, ISenderSymbol } from ".";
+import { Container, inject, injectable, Newable } from "inversify";
+import { INotification, IPublisher, IReqHandler, IRequest, ISender, ISenderSymbol } from ".";
 
 export const METADATA_KEY = {
   handlerFor: Symbol.for("empack:handleFor"),
@@ -43,7 +36,7 @@ class MediatorMap {
     return this._map.get(req);
   }
 
-  loadFromHandlers(handlers: any[]) {
+  loadFromHandlers(handlers: Newable<any>[]) {
     for (const handler of handlers) {
       const req = Reflect.getMetadata(METADATA_KEY.handlerFor, handler);
       if (!req) {
@@ -55,51 +48,28 @@ class MediatorMap {
   }
 }
 
-@injectable()
-export class MediatorModule extends Module {
+export class Mediator implements ISender, IPublisher {
   private readonly _mediatorMap: MediatorMap;
-
   constructor(
     private readonly container: Container,
-    handlers: Array<new (...args: any[]) => IReqHandler<any, any>>,
+    handlers: Newable<any>[],
     private readonly pipeline?: {
-      pre?: MediatorPipe[];
-      post?: MediatorPipe[];
+      pre?: Newable<MediatorPipe>[];
+      post?: Newable<MediatorPipe>[];
     },
   ) {
-    super();
     this._mediatorMap = new MediatorMap().loadFromHandlers(handlers);
   }
 
-  protected bindModule(options: ContainerModuleLoadOptions): void {
-    const mediator = new Mediator(
-      this.container,
-      this._mediatorMap,
-      this.pipeline?.pre ?? [],
-      this.pipeline?.post ?? [],
-    );
-    options.bind<ISender>(ISenderSymbol).toConstantValue(mediator);
-    options.bind<IPublisher>(IPublisherSymbol).toConstantValue(mediator);
-  }
-}
-
-class Mediator implements ISender, IPublisher {
-  constructor(
-    private readonly _container: Container,
-    private readonly _mediatorMap: MediatorMap,
-    private readonly _prePipeline: any,
-    private readonly _postPipeline: any,
-  ) {}
-
   private async processPipeline(
     input: any,
-    pipelines: Array<new (...args: any[]) => MediatorPipe>,
+    pipelines?: Newable<MediatorPipe>[],
   ): Promise<any> {
     let index = 0;
     const next = async (pipe: any): Promise<any> => {
-      if (index < pipelines.length) {
+      if (pipelines && index < pipelines.length) {
         const PipelineClass = pipelines[index++];
-        const pipeline = this._container.get(PipelineClass);
+        const pipeline = this.container.get(PipelineClass);
         return await pipeline.handle(pipe, (nextInput: any) => next(nextInput));
       } else {
         return pipe;
@@ -116,15 +86,15 @@ class Mediator implements ISender, IPublisher {
       throw new Error("handler not found");
     }
 
-    return await this.processPipeline(req, this._prePipeline)
-      .then((input) => this._container.get(handler).handle(input))
-      .then((output) => this.processPipeline(output, this._postPipeline));
+    return await this.processPipeline(req, this.pipeline?.pre)
+      .then((input) => this.container.get(handler).handle(input))
+      .then((output) => this.processPipeline(output, this.pipeline?.post));
   }
 
   async publish<T extends INotification<T>>(event: T): Promise<void> {
     await Promise.all(
       event.getSubscribers().map(async (handler) => {
-        const handlerInstance = this._container.get(handler);
+        const handlerInstance = this.container.get(handler);
         await handlerInstance.handle(event);
       }),
     );

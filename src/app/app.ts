@@ -123,6 +123,7 @@ export class App {
 
   addConstant(types: symbol, instance: any) {
     this.serviceContainer.bind(types).toConstantValue(instance);
+    return this;
   }
 
   setDotEnv(path: string) {

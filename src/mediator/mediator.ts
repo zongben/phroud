@@ -1,8 +1,10 @@
 import { Container, inject, injectable, Newable } from "inversify";
-import { INotification, IPublisher, IReqHandler, IRequest, ISender, ISenderSymbol } from ".";
+import { IPublisher, IReqHandler, IRequest, ISender, ISenderSymbol } from ".";
+import { EventMap, MediatorMap } from "./types";
 
-export const METADATA_KEY = {
+export const MEDIATOR_KEY = {
   handlerFor: Symbol.for("empack:handleFor"),
+  subscribe: Symbol.for("empack:subscribeTo"),
 };
 
 export abstract class MediatedController {
@@ -25,61 +27,35 @@ export abstract class Request<TResult> implements IRequest<TResult> {
   __TYPE_ASSERT?: TResult;
 }
 
-class MediatorMap {
-  private _map = new Map();
-
-  set(req: any, handler: any) {
-    this._map.set(req, handler);
-  }
-
-  get(req: any) {
-    return this._map.get(req);
-  }
-
-  loadFromHandlers(handlers: Newable<any>[]) {
-    for (const handler of handlers) {
-      const req = Reflect.getMetadata(METADATA_KEY.handlerFor, handler);
-      if (!req) {
-        throw new Error(`Handler ${handler.name} is missing decorator`);
-      }
-      this._map.set(req, handler);
-    }
-    return this;
-  }
-}
-
 export class Mediator implements ISender, IPublisher {
-  private readonly _mediatorMap: MediatorMap;
   constructor(
     private readonly container: Container,
-    handlers: Newable<any>[],
+    private readonly mediatorMap: MediatorMap,
+    private readonly eventMap: EventMap,
     private readonly pipeline?: {
       pre?: Newable<MediatorPipe>[];
       post?: Newable<MediatorPipe>[];
     },
-  ) {
-    this._mediatorMap = new MediatorMap().loadFromHandlers(handlers);
-  }
+  ) {}
 
-  private async processPipeline(
-    input: any,
+  private async processPipeline<T>(
+    input: T,
     pipelines?: Newable<MediatorPipe>[],
-  ): Promise<any> {
+  ): Promise<T> {
     let index = 0;
-    const next = async (pipe: any): Promise<any> => {
+    const next = async (pipe: T): Promise<T> => {
       if (pipelines && index < pipelines.length) {
         const PipelineClass = pipelines[index++];
-        const pipeline = this.container.get(PipelineClass);
-        return await pipeline.handle(pipe, (nextInput: any) => next(nextInput));
-      } else {
-        return pipe;
+        const pipeline = await this.container.getAsync(PipelineClass);
+        return await pipeline.handle(pipe, (nextInput: T) => next(nextInput));
       }
+      return pipe;
     };
     return await next(input);
   }
 
   async send<TRes>(req: any): Promise<TRes> {
-    const handler = this._mediatorMap.get(req.constructor) as new (
+    const handler = this.mediatorMap.get(req.constructor) as new (
       ...args: any[]
     ) => IReqHandler<any, TRes>;
     if (!handler) {
@@ -91,11 +67,12 @@ export class Mediator implements ISender, IPublisher {
       .then((output) => this.processPipeline(output, this.pipeline?.post));
   }
 
-  async publish<T extends INotification<T>>(event: T): Promise<void> {
+  async publish<T extends object>(event: T): Promise<void> {
+    const handlers = this.eventMap.get(event.constructor) ?? [];
     await Promise.all(
-      event.getSubscribers().map(async (handler) => {
-        const handlerInstance = this.container.get(handler);
-        await handlerInstance.handle(event);
+      handlers.map(async (HandlerClass: any) => {
+        const instance: any = await this.container.getAsync(HandlerClass);
+        await instance.handle(event);
       }),
     );
   }

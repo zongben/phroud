@@ -11,10 +11,10 @@ import { ILogger } from "../logger";
 import { IEnv } from "./interfaces";
 import {
   IPublisherSymbol,
-  IReqHandler,
   ISenderSymbol,
   Mediator,
   MediatorPipe,
+  MEDIATOR_KEY,
 } from "../mediator";
 import {
   ExceptionHandler,
@@ -31,6 +31,7 @@ import {
 import { Timer, timerStorage } from "../utils";
 import { IEnvSymbol, ILoggerSymbol } from "./symbols";
 import { Module } from "../di";
+import { EventMap, MediatorMap } from "../mediator/types";
 
 function isAnonymous(prototype: any, methodName: string) {
   if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype.constructor)) {
@@ -89,7 +90,8 @@ export class App {
   private _notFoundHandler?: NotFoundHandler;
   private _authGuard?: ExpressMiddleware;
   private _preRequestScope = new Map<symbol, Newable>();
-  private _mediatorHandlers: Newable<any>[] = [];
+  private _mediatorMap: MediatorMap = new Map();
+  private _eventMap: EventMap = new Map();
   private _mediatorPipeLine?: {
     pre?: Newable<MediatorPipe>[];
     post?: Newable<MediatorPipe>[];
@@ -161,7 +163,8 @@ export class App {
 
     const mediator = new Mediator(
       child,
-      this._mediatorHandlers,
+      this._mediatorMap,
+      this._eventMap,
       this._mediatorPipeLine,
     );
     child.bind(ISenderSymbol).toConstantValue(mediator);
@@ -171,13 +174,27 @@ export class App {
   }
 
   setMediator(
-    handlers: Array<new (...args: any[]) => IReqHandler<any, any>>,
+    handlers: Newable[],
     pipeline?: {
       pre?: Newable<MediatorPipe>[];
       post?: Newable<MediatorPipe>[];
     },
   ) {
-    this._mediatorHandlers = handlers;
+    loop: for (const handler of handlers) {
+      const reqKey = Reflect.getMetadata(MEDIATOR_KEY.handlerFor, handler);
+      if (reqKey) {
+        this._mediatorMap.set(reqKey, handler);
+        continue loop;
+      }
+      const eventKey = Reflect.getMetadata(MEDIATOR_KEY.subscribe, handler);
+      if (eventKey) {
+        const events = this._eventMap.get(eventKey) ?? [];
+        events.push(handler);
+        this._eventMap.set(eventKey, events);
+        continue loop;
+      }
+      throw new Error(`Handler ${handler.name} is missing @HandlerFor or @Subscribe`);
+    }
     if (pipeline) {
       this._mediatorPipeLine = pipeline;
     }
@@ -238,7 +255,7 @@ export class App {
           next: NextFunction,
         ) => {
           const childContainer = this._createRequestContainer();
-          const instance = childContainer.get(ControllerClass);
+          const instance = await childContainer.getAsync(ControllerClass);
           await instance[route.handlerName](req, res, next);
         };
 
@@ -253,13 +270,13 @@ export class App {
           guard = this._authGuard;
         }
 
-        const middleware = route.middleware || [];
+        const routeMiddleware = route.middleware || [];
 
         (router as any)[route.method](
           route.path,
           guard,
           ...classMiddleware,
-          ...middleware,
+          ...routeMiddleware,
           handler,
         );
       }

@@ -1,12 +1,13 @@
 import { inject } from "../../../../../../src/di";
 import { IJwTokenHelper } from "../../../../../../src/jwt";
-import { HandleFor, IReqHandler } from "../../../../../../src/mediator";
+import { HandleFor, IPublisher, IPublisherSymbol, IReqHandler } from "../../../../../../src/mediator";
 import { ErrorReturn, OkReturn, Result } from "../../../../../../src/result";
 import { TrackClassMethods } from "../../../../../../src/utils";
 import { AccessTokenSymbol, RefreshTokenSymbol } from "../../../../infra/jwt";
 import { UserRepository } from "../../../../infra/repository/user.repository";
 import { ErrorCodes } from "../../../error-codes";
 import { IUserRepository } from "../../../persistence/user.repository";
+import { LoginFailedEvent } from "./events/loginFailed.event";
 import { LoginCommand } from "./login.command";
 import { LoginError, LoginResult } from "./login.result";
 
@@ -16,7 +17,7 @@ export class LoginHandler
   implements IReqHandler<LoginCommand, Result<LoginResult, LoginError>>
 {
   constructor(
-    // @inject(MEDIATOR_TYPES.IPublisher) private _publisher: IPublisher,
+    @inject(IPublisherSymbol) private _publisher: IPublisher,
     @inject(UserRepository) private _userRepository: IUserRepository,
     @inject(AccessTokenSymbol)
     private _accessTokenHelper: IJwTokenHelper,
@@ -33,7 +34,7 @@ export class LoginHandler
 
     const isPasswordCorrect = await user.isPasswordCorrect(req.password);
     if (!isPasswordCorrect) {
-      // await this._publisher.publish(new LoginFailedEvent(req.account));
+      await this._publisher.publish(new LoginFailedEvent(req.account));
       return new ErrorReturn(ErrorCodes.ACCOUNT_OR_PASSWORD_INCORRECT);
     }
 

@@ -16,11 +16,7 @@ export interface IReqHandler<T extends IRequest<TResult>, TResult> {
 }
 
 export interface IPublisher {
-  publish<T extends INotification<T>>(event: T): Promise<void>;
-}
-
-export interface INotification<T> {
-  getSubscribers(): Array<new (...args: any[]) => IEventHandler<T>>;
+  publish<T extends object>(event: T): Promise<void>;
 }
 
 export interface IEventHandler<T> {

@@ -193,7 +193,9 @@ export class App {
         this._eventMap.set(eventKey, events);
         continue loop;
       }
-      throw new Error(`Handler ${handler.name} is missing @HandlerFor or @Subscribe`);
+      throw new Error(
+        `Handler ${handler.name} is missing @HandlerFor or @Subscribe`,
+      );
     }
     if (pipeline) {
       this._mediatorPipeLine = pipeline;
@@ -415,7 +417,7 @@ export class App {
 
   private _bindLogger() {
     this.serviceContainer
-      .bind<ILogger>(ILoggerSymbol)
+      .rebindSync<ILogger>(ILoggerSymbol)
       .toConstantValue(this.logger);
   }
 

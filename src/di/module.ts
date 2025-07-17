@@ -9,10 +9,10 @@ export type ContainerModule = {
 };
 
 export interface BindingFluentAPI {
-  singleton(type: symbol, constructor: Newable): void;
-  request(type: symbol, constructor: Newable): void;
-  transient(type: symbol, constructor: Newable): void;
-  constant(type: symbol, value: any): void;
+  addSingletonScope(type: symbol, constructor: Newable): void;
+  addRequestScope(type: symbol, constructor: Newable): void;
+  addTransientScope(type: symbol, constructor: Newable): void;
+  addConstant(type: symbol, value: any): void;
 }
 
 export abstract class Module {
@@ -26,13 +26,13 @@ export abstract class Module {
 
   private createBinder(): BindingFluentAPI {
     return {
-      singleton: (type, ctor) =>
+      addSingletonScope: (type, ctor) =>
         this.binder.push({ scope: "singleton", type, constructor: ctor }),
-      request: (type, ctor) =>
+      addRequestScope: (type, ctor) =>
         this.binder.push({ scope: "request", type, constructor: ctor }),
-      transient: (type, ctor) =>
+      addTransientScope: (type, ctor) =>
         this.binder.push({ scope: "transient", type, constructor: ctor }),
-      constant: (type, value) =>
+      addConstant: (type, value) =>
         this.binder.push({ scope: "constant", type, constructor: value }),
     };
   }

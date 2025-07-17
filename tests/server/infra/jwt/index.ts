@@ -12,11 +12,11 @@ export class JwtModule extends Module {
     super();
   }
   register(bind: BindingFluentAPI): void {
-    bind.constant(
+    bind.addConstant(
       AccessTokenSymbol,
       new JwTokenHelper(this.accessTokenSetting),
     );
-    bind.constant(
+    bind.addConstant(
       RefreshTokenSymbol,
       new JwTokenHelper(this.refreshTokenSetting),
     );

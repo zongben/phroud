@@ -125,6 +125,7 @@ class Logger implements ILogger {
 
 export class AppOptions {
   routerPrefix: string = "/api";
+  setTimeout?: number;
 }
 
 export class App {
@@ -466,6 +467,8 @@ export class App {
         this._connections.delete(conn);
       });
     });
+
+    this._server.setTimeout(this.options.setTimeout);
 
     process.on("SIGINT", this._gracefulShutdown.bind(this));
     process.on("SIGTERM", this._gracefulShutdown.bind(this));

@@ -25,13 +25,14 @@ export const validate = <T = any>(
     }
     const errs = validationResult(req);
     if (!errs.isEmpty()) {
-      return res
+      res
         .status(options?.status ?? 400)
         .json(
           options?.handler
             ? options.handler(errs.array())
             : errs.array().map((x) => x.msg),
         );
+      return;
     }
     next();
   };

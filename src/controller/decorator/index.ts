@@ -1,4 +1,4 @@
-import { injectable, injectFromBase } from "inversify";
+import { injectable, injectFromBase, Newable } from "inversify";
 import { BufferResponse, FileResponse, JsonResponse, ResWith } from "..";
 import {
   Request,
@@ -24,7 +24,7 @@ export const ROUTE_METADATA_KEY = Symbol("empack:route_metadata");
 
 export function Controller(
   path: string,
-  ...middleware: EmpackMiddleware[]
+  ...middleware: (Newable<EmpackMiddleware> | EmpackMiddlewareFunction)[]
 ): ClassDecorator {
   return (target) => {
     Reflect.defineMetadata(CONTROLLER_METADATA.PATH, path, target);
@@ -98,7 +98,7 @@ function applyWithData(res: Response, withData: ResponseWith = {}) {
 function createRouteDecorator(method: RouteDefinition["method"]) {
   return (
     path: string,
-    ...middleware: EmpackMiddleware[] | EmpackMiddlewareFunction[]
+    ...middleware: (Newable<EmpackMiddleware> | EmpackMiddlewareFunction)[]
   ): MethodDecorator => {
     return (target, propertyKey, descriptor: PropertyDescriptor) => {
       const original = descriptor.value;

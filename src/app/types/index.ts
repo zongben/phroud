@@ -10,14 +10,14 @@ export type EmpackMiddlewareFunction = (
   req: Request,
   res: Response,
   next: NextFunction,
-) => void;
+) => void | Promise<void> | unknown;
 
 export type EmpackExceptionMiddlewareFunction = (
   err: Error,
   req: Request,
   res: Response,
   next: NextFunction,
-) => void;
+) => void | Promise<void> | unknown;
 
 export type ExceptionHandler = (
   err: Error,

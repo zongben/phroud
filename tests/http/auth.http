@@ -33,6 +33,11 @@ Content-Type: application/json
 
 ###
 
+POST {{host}}/error
+Content-Type: application/json
+
+###
+
 GET {{host}}/file
 Content-Type: application/json
 

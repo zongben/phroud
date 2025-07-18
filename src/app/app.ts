@@ -1,10 +1,4 @@
-import express, {
-  Router,
-  ErrorRequestHandler,
-  NextFunction,
-  Request,
-  Response,
-} from "express";
+import express, { Router, NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import "reflect-metadata";
 import { Container, Newable } from "inversify";
@@ -44,10 +38,17 @@ import { IEnvSymbol, ILoggerSymbol } from "./symbols";
 import { Module } from "../di";
 import { EventMap, MediatorMap } from "../mediator/types";
 
-function extractMiddleware(
-  middleware: EmpackMiddleware | EmpackMiddlewareFunction,
-) {
-  return typeof middleware === "function" ? middleware : middleware.use;
+async function resolveMiddleware(
+  container: Container,
+  middleware: Newable<EmpackMiddleware> | EmpackMiddlewareFunction,
+): Promise<EmpackMiddlewareFunction> {
+  if (middleware.prototype) {
+    const instance = await container.getAsync(
+      middleware as Newable<EmpackMiddleware>,
+    );
+    return instance.use.bind(instance);
+  }
+  return middleware as EmpackMiddlewareFunction;
 }
 
 function isAnonymous(prototype: any, methodName: string) {
@@ -58,6 +59,19 @@ function isAnonymous(prototype: any, methodName: string) {
     return true;
   }
   return false;
+}
+
+function executeMiddleware(
+  fn: EmpackMiddlewareFunction,
+  req: Request,
+  res: Response,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
 }
 
 class Env implements IEnv {
@@ -246,6 +260,20 @@ export class App {
     return this;
   }
 
+  private _asyncMiddlewareWrapper(
+    container: Container,
+    middleware: Newable<EmpackMiddleware> | EmpackMiddlewareFunction,
+  ) {
+    return async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const fn = await resolveMiddleware(container, middleware);
+        await fn(req, res, next);
+      } catch (err) {
+        next(err);
+      }
+    };
+  }
+
   mapController(controllers: Newable<any>[]) {
     controllers.forEach((ControllerClass) => {
       const controllerPath: string = Reflect.getMetadata(
@@ -259,7 +287,9 @@ export class App {
         );
       }
 
-      const classMiddleware: EmpackMiddleware[] =
+      const classMiddleware:
+        | Newable<EmpackMiddleware>[]
+        | EmpackMiddlewareFunction[] =
         Reflect.getMetadata(CONTROLLER_METADATA.MIDDLEWARE, ControllerClass) ||
         [];
 
@@ -276,30 +306,25 @@ export class App {
         ) => {
           const childContainer = this._createRequestContainer();
           const instance = await childContainer.getAsync(ControllerClass);
+
+          for (const m of [...classMiddleware, ...(route.middleware ?? [])]) {
+            const fn = await resolveMiddleware(childContainer, m);
+            await executeMiddleware(fn, req, res);
+          }
           await instance[route.handlerName](req, res, next);
         };
 
-        let guard = (_req: Request, _res: Response, next: NextFunction) => {
+        const guard: EmpackMiddlewareFunction = async (_req, _res, next) => {
+          if (
+            this._authGuard &&
+            !isAnonymous(ControllerClass.prototype, route.handlerName)
+          ) {
+            return this._authGuard;
+          }
           next();
         };
 
-        if (
-          this._authGuard &&
-          !isAnonymous(ControllerClass.prototype, route.handlerName)
-        ) {
-          guard = this._authGuard;
-        }
-
-        const routeMiddleware =
-          route.middleware?.map((m) => extractMiddleware(m)) || [];
-
-        (router as any)[route.method](
-          route.path,
-          guard,
-          ...classMiddleware,
-          ...routeMiddleware,
-          handler,
-        );
+        router[route.method](route.path, guard, handler);
       }
 
       const fullMountPath = `${this.options.routerPrefix}/${controllerPath}`
@@ -324,24 +349,26 @@ export class App {
   }
 
   useTimerMiddleware(handler: TimerHanlder) {
-    this.useMiddleware((req: Request, res: Response, next: NextFunction) => {
-      const timer = Timer.create();
-      const start = performance.now();
+    this.useMiddleware(
+      async (req: Request, res: Response, next: NextFunction) => {
+        const timer = Timer.create();
+        const start = performance.now();
 
-      onFinished(res, () => {
-        const end = performance.now();
-        const duration = end - start;
-        handler(duration, timer.getAllTimeSpans(), req, res);
-      });
+        onFinished(res, () => {
+          const end = performance.now();
+          const duration = end - start;
+          handler(duration, timer.getAllTimeSpans(), req, res);
+        });
 
-      timerStorage.run(timer, () => {
-        next();
-      });
-    });
+        timerStorage.run(timer, () => {
+          next();
+        });
+      },
+    );
     return this;
   }
 
-  private _useExceptionMiddleware: ErrorRequestHandler = (
+  private _useExceptionMiddleware: EmpackExceptionMiddlewareFunction = async (
     err,
     req,
     res,
@@ -361,7 +388,7 @@ export class App {
     res.status(statusCode ?? 500).json(result ?? "Internal Server Error");
   };
 
-  private _useNotFoundMiddleware = (req: Request, res: Response) => {
+  private _useNotFoundMiddleware = async (req: Request, res: Response) => {
     this.logger.warn(`Not found: ${req.method} ${req.originalUrl}`);
     let statusCode;
     let result;
@@ -390,8 +417,11 @@ export class App {
     return this;
   }
 
-  setAuthGuard(guard: EmpackMiddlewareFunction | EmpackMiddleware) {
-    this._authGuard = extractMiddleware(guard);
+  setAuthGuard(guard: EmpackMiddlewareFunction | Newable<EmpackMiddleware>) {
+    this._authGuard = this._asyncMiddlewareWrapper(
+      this.serviceContainer,
+      guard,
+    );
     return this;
   }
 

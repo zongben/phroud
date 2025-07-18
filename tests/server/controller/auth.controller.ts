@@ -20,6 +20,7 @@ import { RegisterCommand } from "../application/use-case/command/register/regist
 import { inject } from "inversify";
 import { ScopeTest, ScopeTestSymbol } from "../domain/user/user.root";
 import { createMulter, uploader } from "../../../src/uploader";
+import { AsyncTestMiddleware } from "../middleware";
 
 const storage: uploader.DiskStorageOptions = {
   destination: `${process.cwd()}/tests/upload_test/`,
@@ -90,10 +91,13 @@ export class AuthController extends MediatedController {
     });
   }
 
-  @Get("/empty")
+  @Get("/empty", AsyncTestMiddleware, (_req, _res, next) => {
+    console.log("sync function");
+    next();
+  })
   async empty() {}
 
-  @Post("/error")
+  @Post("/error", AsyncTestMiddleware)
   async error() {
     throw new Error("error test");
   }

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { TimeSpan } from "../../utils";
 
-export type ExpressMiddleware = (
+export type EmpackMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction,

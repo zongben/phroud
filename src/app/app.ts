@@ -18,7 +18,7 @@ import {
 } from "../mediator";
 import {
   ExceptionHandler,
-  ExpressMiddleware,
+  EmpackMiddleware,
   NotFoundHandler,
   TimerHanlder,
 } from "./types";
@@ -88,7 +88,7 @@ export class App {
   private _connections: Set<Socket>;
   private _exceptionHandler?: ExceptionHandler;
   private _notFoundHandler?: NotFoundHandler;
-  private _authGuard?: ExpressMiddleware;
+  private _authGuard?: EmpackMiddleware;
   private _preRequestScope = new Map<symbol, Newable>();
   private _mediatorMap: MediatorMap = new Map();
   private _eventMap: EventMap = new Map();
@@ -211,16 +211,16 @@ export class App {
         const { type, constructor, scope } = entry;
         switch (scope) {
           case "singleton":
-            this.serviceContainer.bind(type).to(constructor).inSingletonScope();
+            this.addSingletonScope(type, constructor);
             break;
           case "request":
             this.addRequestScope(type, constructor);
             break;
           case "transient":
-            this.serviceContainer.bind(type).to(constructor).inTransientScope();
+            this.addTransientScope(type, constructor);
             break;
           case "constant":
-            this.serviceContainer.bind(type).toConstantValue(constructor);
+            this.addConstant(type, constructor);
             break;
         }
       }
@@ -241,7 +241,7 @@ export class App {
         );
       }
 
-      const classMiddleware: ExpressMiddleware[] =
+      const classMiddleware: EmpackMiddleware[] =
         Reflect.getMetadata(CONTROLLER_METADATA.MIDDLEWARE, ControllerClass) ||
         [];
 
@@ -261,7 +261,7 @@ export class App {
           await instance[route.handlerName](req, res, next);
         };
 
-        let guard: ExpressMiddleware = (_req, _res, next) => {
+        let guard: EmpackMiddleware = (_req, _res, next) => {
           next();
         };
 
@@ -342,7 +342,7 @@ export class App {
     res.status(statusCode ?? 500).json(result ?? "Internal Server Error");
   };
 
-  private _useNotFoundMiddleware: ExpressMiddleware = (req, res) => {
+  private _useNotFoundMiddleware: EmpackMiddleware = (req, res) => {
     this.logger.warn(`Not found: ${req.method} ${req.originalUrl}`);
     let statusCode;
     let result;
@@ -356,12 +356,12 @@ export class App {
     res.status(statusCode ?? 404).json(result ?? "Not Found");
   };
 
-  useMiddleware(middleware: ExpressMiddleware) {
+  useMiddleware(middleware: EmpackMiddleware) {
     this._app.use(middleware);
     return this;
   }
 
-  setAuthGuard(guard: ExpressMiddleware) {
+  setAuthGuard(guard: EmpackMiddleware) {
     this._authGuard = guard;
     return this;
   }

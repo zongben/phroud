@@ -61,6 +61,20 @@ function isAnonymous(prototype: any, methodName: string) {
   return false;
 }
 
+function asyncMiddlewareWrapper(
+  container: Container,
+  middleware: Newable<EmpackMiddleware> | EmpackMiddlewareFunction,
+) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const fn = await resolveMiddleware(container, middleware);
+      await fn(req, res, next);
+    } catch (err) {
+      next(err);
+    }
+  };
+}
+
 function executeMiddleware(
   fn: EmpackMiddlewareFunction,
   req: Request,
@@ -260,20 +274,6 @@ export class App {
     return this;
   }
 
-  private _asyncMiddlewareWrapper(
-    container: Container,
-    middleware: Newable<EmpackMiddleware> | EmpackMiddlewareFunction,
-  ) {
-    return async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const fn = await resolveMiddleware(container, middleware);
-        await fn(req, res, next);
-      } catch (err) {
-        next(err);
-      }
-    };
-  }
-
   mapController(controllers: Newable<any>[]) {
     controllers.forEach((ControllerClass) => {
       const controllerPath: string = Reflect.getMetadata(
@@ -418,10 +418,7 @@ export class App {
   }
 
   setAuthGuard(guard: EmpackMiddlewareFunction | Newable<EmpackMiddleware>) {
-    this._authGuard = this._asyncMiddlewareWrapper(
-      this.serviceContainer,
-      guard,
-    );
+    this._authGuard = asyncMiddlewareWrapper(this.serviceContainer, guard);
     return this;
   }
 

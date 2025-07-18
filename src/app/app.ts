@@ -314,12 +314,12 @@ export class App {
           await instance[route.handlerName](req, res, next);
         };
 
-        const guard: EmpackMiddlewareFunction = async (_req, _res, next) => {
+        const guard: EmpackMiddlewareFunction = async (req, res, next) => {
           if (
             this._authGuard &&
             !isAnonymous(ControllerClass.prototype, route.handlerName)
           ) {
-            return this._authGuard;
+            return this._authGuard(req, res, next);
           }
           next();
         };

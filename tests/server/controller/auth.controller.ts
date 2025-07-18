@@ -17,13 +17,15 @@ import { ErrorBody } from "./error-body";
 import { ErrorCodes } from "../application/error-codes";
 import { RegisterReq, RegisterRule } from "../contract/auth/register";
 import { RegisterCommand } from "../application/use-case/command/register/register.command";
-import { upload, uploader } from "../../../src/uploader";
 import { inject } from "inversify";
 import { ScopeTest, ScopeTestSymbol } from "../domain/user/user.root";
+import { createMulter, uploader } from "../../../src/uploader";
 
 const storage: uploader.DiskStorageOptions = {
   destination: `${process.cwd()}/tests/upload_test/`,
 };
+
+const multer = createMulter(storage);
 
 @TrackClassMethods()
 @Controller("/auth")
@@ -101,7 +103,7 @@ export class AuthController extends MediatedController {
     return Responses.File("test.txt", `tests/assets/test.txt`);
   }
 
-  @Post("/file", upload(storage).single("file"))
+  @Post("/file", multer.single("file"))
   async postFile(@FromFile() file: Express.Multer.File) {
     return Responses.OK(file.filename);
   }

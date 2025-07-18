@@ -1,4 +1,10 @@
-import express, { Router, ErrorRequestHandler, NextFunction } from "express";
+import express, {
+  Router,
+  ErrorRequestHandler,
+  NextFunction,
+  Request,
+  Response,
+} from "express";
 import dotenv from "dotenv";
 import "reflect-metadata";
 import { Container, Newable } from "inversify";
@@ -8,7 +14,11 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import onFinished from "on-finished";
 import { ILogger } from "../logger";
-import { IEnv } from "./interfaces";
+import {
+  EmpackExceptionMiddleware,
+  EmpackMiddleware,
+  IEnv,
+} from "./interfaces";
 import {
   IPublisherSymbol,
   ISenderSymbol,
@@ -17,8 +27,9 @@ import {
   MEDIATOR_KEY,
 } from "../mediator";
 import {
+  EmpackExceptionMiddlewareFunction,
+  EmpackMiddlewareFunction,
   ExceptionHandler,
-  EmpackMiddleware,
   NotFoundHandler,
   TimerHanlder,
 } from "./types";
@@ -32,6 +43,12 @@ import { Timer, timerStorage } from "../utils";
 import { IEnvSymbol, ILoggerSymbol } from "./symbols";
 import { Module } from "../di";
 import { EventMap, MediatorMap } from "../mediator/types";
+
+function extractMiddleware(
+  middleware: EmpackMiddleware | EmpackMiddlewareFunction,
+) {
+  return typeof middleware === "function" ? middleware : middleware.use;
+}
 
 function isAnonymous(prototype: any, methodName: string) {
   if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype.constructor)) {
@@ -88,7 +105,7 @@ export class App {
   private _connections: Set<Socket>;
   private _exceptionHandler?: ExceptionHandler;
   private _notFoundHandler?: NotFoundHandler;
-  private _authGuard?: EmpackMiddleware;
+  private _authGuard?: EmpackMiddlewareFunction;
   private _preRequestScope = new Map<symbol, Newable>();
   private _mediatorMap: MediatorMap = new Map();
   private _eventMap: EventMap = new Map();
@@ -157,6 +174,7 @@ export class App {
       autobind: true,
     });
 
+    // TODO: efficiency concern
     for (const [symbol, ctor] of this._preRequestScope) {
       child.bind(symbol).to(ctor).inSingletonScope();
     }
@@ -261,7 +279,7 @@ export class App {
           await instance[route.handlerName](req, res, next);
         };
 
-        let guard: EmpackMiddleware = (_req, _res, next) => {
+        let guard = (_req: Request, _res: Response, next: NextFunction) => {
           next();
         };
 
@@ -272,7 +290,8 @@ export class App {
           guard = this._authGuard;
         }
 
-        const routeMiddleware = route.middleware || [];
+        const routeMiddleware =
+          route.middleware?.map((m) => extractMiddleware(m)) || [];
 
         (router as any)[route.method](
           route.path,
@@ -305,7 +324,7 @@ export class App {
   }
 
   useTimerMiddleware(handler: TimerHanlder) {
-    this.useMiddleware((req: any, res: any, next: any) => {
+    this.useMiddleware((req: Request, res: Response, next: NextFunction) => {
       const timer = Timer.create();
       const start = performance.now();
 
@@ -342,7 +361,7 @@ export class App {
     res.status(statusCode ?? 500).json(result ?? "Internal Server Error");
   };
 
-  private _useNotFoundMiddleware: EmpackMiddleware = (req, res) => {
+  private _useNotFoundMiddleware = (req: Request, res: Response) => {
     this.logger.warn(`Not found: ${req.method} ${req.originalUrl}`);
     let statusCode;
     let result;
@@ -356,13 +375,23 @@ export class App {
     res.status(statusCode ?? 404).json(result ?? "Not Found");
   };
 
-  useMiddleware(middleware: EmpackMiddleware) {
-    this._app.use(middleware);
+  useMiddleware(
+    middleware:
+      | EmpackMiddlewareFunction
+      | EmpackMiddleware
+      | EmpackExceptionMiddlewareFunction
+      | EmpackExceptionMiddleware,
+  ) {
+    if (typeof middleware == "function") {
+      this._app.use(middleware);
+    } else {
+      this._app.use(middleware.use);
+    }
     return this;
   }
 
-  setAuthGuard(guard: EmpackMiddleware) {
-    this._authGuard = guard;
+  setAuthGuard(guard: EmpackMiddlewareFunction | EmpackMiddleware) {
+    this._authGuard = extractMiddleware(guard);
     return this;
   }
 
@@ -397,7 +426,7 @@ export class App {
   }
 
   run(port: number = 3000) {
-    this.useMiddleware(this._useExceptionMiddleware as any);
+    this.useMiddleware(this._useExceptionMiddleware);
     this.useMiddleware(this._useNotFoundMiddleware);
 
     this._server = this._app.listen(port, () => {

@@ -1,6 +1,11 @@
 import { injectable, injectFromBase } from "inversify";
 import { BufferResponse, FileResponse, JsonResponse, ResWith } from "..";
-import { Request, Response, NextFunction } from "../../app";
+import {
+  Request,
+  Response,
+  NextFunction,
+  EmpackMiddlewareFunction,
+} from "../../app";
 import { EmpackMiddleware } from "../../app";
 import {
   ParamMetadata,
@@ -93,7 +98,7 @@ function applyWithData(res: Response, withData: ResponseWith = {}) {
 function createRouteDecorator(method: RouteDefinition["method"]) {
   return (
     path: string,
-    ...middleware: EmpackMiddleware[]
+    ...middleware: EmpackMiddleware[] | EmpackMiddlewareFunction[]
   ): MethodDecorator => {
     return (target, propertyKey, descriptor: PropertyDescriptor) => {
       const original = descriptor.value;

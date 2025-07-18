@@ -3,7 +3,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { IJwTokenHelper } from "./interfaces";
 import { JwtHandler, JwtHandlerResult, JwTokenSettings } from "./types";
 
-export function jwtValidHandler(secret: string, handler?: JwtHandler) {
+export function jwtGuard(secret: string, handler?: JwtHandler) {
   return (req: Request, res: Response, next: NextFunction) => {
     function handleError(
       fallbackStatus: number,

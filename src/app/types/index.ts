@@ -1,28 +1,30 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { TimeSpan } from "../../utils";
 
-export type EmpackMiddleware = (
+export type HandlerResult = {
+  statusCode?: number;
+  body?: any;
+};
+
+export type EmpackMiddlewareFunction = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => void;
 
-export type ExceptionHandlerResult = {
-  statusCode?: number;
-  body?: any;
-};
-
-export type NotFoundHandlerResult = {
-  statusCode?: number;
-  body?: any;
-};
+export type EmpackExceptionMiddlewareFunction = (
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => void;
 
 export type ExceptionHandler = (
   err: Error,
   req: Request,
-) => ExceptionHandlerResult | void;
+) => HandlerResult | void;
 
-export type NotFoundHandler = (req: Request) => NotFoundHandlerResult | void;
+export type NotFoundHandler = (req: Request) => HandlerResult | void;
 
 export type TimerHanlder = (
   duration: number,

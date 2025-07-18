@@ -1,5 +1,5 @@
 import { CookieOptions } from "express";
-import { EmpackMiddleware } from "../../app";
+import { EmpackMiddleware, EmpackMiddlewareFunction } from "../../app";
 
 export type ResponseWith = {
   cookies?: Cookie[];
@@ -16,7 +16,7 @@ export type RouteDefinition = {
   method: "get" | "post" | "put" | "delete" | "patch";
   path: string;
   handlerName: string;
-  middleware?: EmpackMiddleware[];
+  middleware?: EmpackMiddleware[] | EmpackMiddlewareFunction[];
 };
 
 export type ParamMetadata = {

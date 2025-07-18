@@ -1,6 +1,6 @@
 import { uploader } from ".";
 
-export function upload(storage?: uploader.DiskStorageOptions) {
+export function createMulter(storage?: uploader.DiskStorageOptions) {
   const engine = storage
     ? uploader.diskStorage(storage)
     : uploader.memoryStorage();

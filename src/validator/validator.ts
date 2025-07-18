@@ -4,7 +4,7 @@ import {
   validationResult,
 } from "express-validator";
 import { NextFunction, Request, Response } from "express";
-import { EmpackMiddleware } from "../app";
+import { EmpackMiddlewareFunction } from "../app";
 
 export const createRule = <T>(
   handler: (key: (k: keyof T) => string) => ValidationChain[],
@@ -18,7 +18,7 @@ export const validate = <T = any>(
     status?: number;
     handler?: (errors: ValidationError[]) => T;
   },
-): EmpackMiddleware => {
+): EmpackMiddlewareFunction => {
   return async (req: Request, res: Response, next: NextFunction) => {
     for (const chain of chains) {
       await chain.run(req);

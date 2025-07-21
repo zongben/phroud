@@ -22,13 +22,13 @@ app.loadModules(
     {
       secret: app.env.get("JWT_SECRET"),
       options: {
-        expiresIn: app.env.get("ACCESSTOKEN_EXPIRES_IN"),
+        expiresIn: parseInt(app.env.get("ACCESSTOKEN_EXPIRES_IN")),
       },
     },
     {
       secret: app.env.get("JWT_SECRET"),
       options: {
-        expiresIn: app.env.get("REFRESHTOKEN_EXPIRES_IN"),
+        expiresIn: parseInt(app.env.get("REFRESHTOKEN_EXPIRES_IN")),
       },
     },
   ),
@@ -54,4 +54,4 @@ app.useTimerMiddleware((duration, ts, req, res) => {
   }
 });
 app.mapController(controllers);
-app.run(app.env.get("PORT"));
+app.run(parseInt(app.env.get("PORT")));

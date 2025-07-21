@@ -4,7 +4,8 @@ import {
 } from "../types";
 
 export interface IEnv {
-  get(key: string): any;
+  get(key: string): string;
+  getOptional(key: string): string | undefined
 }
 
 export interface EmpackMiddleware {

@@ -1,17 +1,15 @@
+import { Request } from "../mediator";
+
 export interface ISender {
   send<
-    TReq extends IRequest<TRes>,
-    TRes = TReq extends IRequest<infer R> ? R : never,
+    TReq extends Request<TRes>,
+    TRes = TReq extends Request<infer R> ? R : never,
   >(
     req: TReq,
   ): Promise<TRes>;
 }
 
-export interface IRequest<TResult> {
-  __TYPE_ASSERT?: TResult;
-}
-
-export interface IReqHandler<T extends IRequest<TResult>, TResult> {
+export interface IReqHandler<T extends Request<TResult>, TResult> {
   handle(req: T): Promise<TResult>;
 }
 

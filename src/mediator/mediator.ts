@@ -1,5 +1,5 @@
 import { Container, inject, injectable, Newable } from "inversify";
-import { IPublisher, IReqHandler, IRequest, ISender, ISenderSymbol } from ".";
+import { IPublisher, IReqHandler, ISender, ISenderSymbol } from ".";
 import { EventMap, MediatorMap } from "./types";
 
 export const MEDIATOR_KEY = {
@@ -11,8 +11,8 @@ export abstract class MediatedController {
   @inject(ISenderSymbol) private readonly _sender!: ISender;
 
   async dispatch<
-    TReq extends IRequest<TRes>,
-    TRes = TReq extends IRequest<infer R> ? R : never,
+    TReq extends Request<TRes>,
+    TRes = TReq extends Request<infer R> ? R : never,
   >(req: TReq): Promise<TRes> {
     return await this._sender.send(req);
   }
@@ -23,8 +23,9 @@ export abstract class MediatorPipe {
   abstract handle(req: any, next: any): Promise<any>;
 }
 
-export abstract class Request<TResult> implements IRequest<TResult> {
-  __TYPE_ASSERT?: TResult;
+export abstract class Request<TResult> {
+  //Do not delete this line, this is for TS type assert!!!
+  private __TYPE_ASSERT?: TResult;
 }
 
 export class Mediator implements ISender, IPublisher {

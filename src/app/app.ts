@@ -38,6 +38,16 @@ import { IEnvSymbol, ILoggerSymbol } from "./symbols";
 import { Module } from "../di";
 import { EventMap, MediatorMap } from "../mediator/types";
 
+function isAnonymous(prototype: any, methodName: string) {
+  if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype.constructor)) {
+    return true;
+  }
+  if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype, methodName)) {
+    return true;
+  }
+  return false;
+}
+
 async function resolveMiddleware(
   container: Container,
   middleware: Newable<EmpackMiddleware> | EmpackMiddlewareFunction,
@@ -49,16 +59,6 @@ async function resolveMiddleware(
     return instance.use.bind(instance);
   }
   return middleware as EmpackMiddlewareFunction;
-}
-
-function isAnonymous(prototype: any, methodName: string) {
-  if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype.constructor)) {
-    return true;
-  }
-  if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype, methodName)) {
-    return true;
-  }
-  return false;
 }
 
 function asyncMiddlewareWrapper(
@@ -73,19 +73,6 @@ function asyncMiddlewareWrapper(
       next(err);
     }
   };
-}
-
-function executeMiddleware(
-  fn: EmpackMiddlewareFunction,
-  req: Request,
-  res: Response,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (err) => {
-      if (err) reject(err);
-      else resolve();
-    });
-  });
 }
 
 class Env implements IEnv {
@@ -279,6 +266,15 @@ export class App {
   }
 
   mapController(controllers: Newable<any>[]) {
+    const createRequestScopeContainer: EmpackMiddlewareFunction = (
+      req: any,
+      _res,
+      next,
+    ) => {
+      req._container = this._createRequestContainer();
+      next();
+    };
+
     controllers.forEach((ControllerClass) => {
       const controllerPath: string = Reflect.getMetadata(
         CONTROLLER_METADATA.PATH,
@@ -303,21 +299,6 @@ export class App {
       const router = Router({ mergeParams: true });
 
       for (const route of routes) {
-        const handler = async (
-          req: Request,
-          res: Response,
-          next: NextFunction,
-        ) => {
-          const childContainer = this._createRequestContainer();
-          const instance = await childContainer.getAsync(ControllerClass);
-
-          for (const m of [...classMiddleware, ...(route.middleware ?? [])]) {
-            const fn = await resolveMiddleware(childContainer, m);
-            await executeMiddleware(fn, req, res);
-          }
-          await instance[route.handlerName](req, res, next);
-        };
-
         const guard: EmpackMiddlewareFunction = async (req, res, next) => {
           if (
             this._authGuard &&
@@ -328,7 +309,33 @@ export class App {
           next();
         };
 
-        router[route.method](route.path, guard, handler);
+        const middlewares = [
+          ...classMiddleware,
+          ...(route.middleware ?? []),
+        ].map((m) => {
+          return (req: any, res: any, next: any) => {
+            resolveMiddleware(req._container, m)
+              .then((fn) => fn(req, res, next))
+              .catch(next);
+          };
+        });
+
+        const handler = async (req: any, res: Response, next: NextFunction) => {
+          try {
+            const instance = await req._container.getAsync(ControllerClass);
+            await instance[route.handlerName](req, res, next);
+          } catch (err) {
+            next(err);
+          }
+        };
+
+        router[route.method](
+          route.path,
+          guard,
+          createRequestScopeContainer,
+          ...middlewares,
+          handler,
+        );
       }
 
       const fullMountPath = `${this.options.routerPrefix}/${controllerPath}`

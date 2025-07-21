@@ -20,3 +20,7 @@ export class AsyncTestMiddleware implements EmpackMiddleware {
     next();
   };
 }
+
+export const rateLimiter: EmpackMiddlewareFunction = (_req, _res, next) => {
+  return next(new Error("Too many requests"));
+}

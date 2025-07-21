@@ -139,7 +139,7 @@ export class App {
   private _exceptionHandler?: ExceptionHandler;
   private _notFoundHandler?: NotFoundHandler;
   private _authGuard?: EmpackMiddlewareFunction;
-  private _preRequestScope = new Map<symbol, Newable>();
+  private _requestScopeObjects = new Map<symbol, Newable>();
   private _mediatorMap: MediatorMap = new Map();
   private _eventMap: EventMap = new Map();
   private _mediatorPipeLine?: {
@@ -174,7 +174,7 @@ export class App {
   }
 
   addRequestScope(type: symbol, constructor: Newable) {
-    this._preRequestScope.set(type, constructor);
+    this._requestScopeObjects.set(type, constructor);
     return this;
   }
 
@@ -207,8 +207,7 @@ export class App {
       autobind: true,
     });
 
-    // TODO: efficiency concern
-    for (const [symbol, ctor] of this._preRequestScope) {
+    for (const [symbol, ctor] of this._requestScopeObjects) {
       child.bind(symbol).to(ctor).inSingletonScope();
     }
 
@@ -353,7 +352,7 @@ export class App {
     return this;
   }
 
-  useTimerMiddleware(handler: TimerHanlder) {
+  useTimerMiddleware(handler?: TimerHanlder) {
     this.useMiddleware(
       async (req: Request, res: Response, next: NextFunction) => {
         const timer = Timer.create();
@@ -362,7 +361,18 @@ export class App {
         onFinished(res, () => {
           const end = performance.now();
           const duration = end - start;
-          handler(duration, timer.getAllTimeSpans(), req, res);
+          const ts = timer.getAllTimeSpans();
+          if (handler) {
+            handler(duration, ts, req, res);
+            return;
+          }
+          let msg = `Request: ${res.statusCode} ${req.method} ${req.originalUrl} - Duration: ${duration.toFixed(2)} ms`;
+          const tsMsg = ts.map((span) => {
+            const prefix = " ".repeat((span.depth ? span.depth * 3 : 0) + 28);
+            return `\n${prefix}⎣__TimeSpan: ${span.duration?.toFixed(2) ?? "N/A"} ms - ${span.label}`;
+          });
+          msg += tsMsg.join("");
+          this.logger.debug(msg);
         });
 
         timerStorage.run(timer, () => {

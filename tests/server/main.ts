@@ -40,18 +40,6 @@ app.useCors({
 });
 app.useJsonParser();
 app.useUrlEncodedParser({ extended: true });
-app.useTimerMiddleware((duration, ts, req, res) => {
-  let msg = `Request: ${res.statusCode} ${req.method} ${req.originalUrl} - Duration: ${duration.toFixed(2)} ms`;
-  const tsMsg = ts.map((span) => {
-    const prefix = " ".repeat((span.depth ? span.depth * 3 : 0) + 28);
-    return `\n${prefix}⎣__TimeSpan: ${span.duration?.toFixed(2) ?? "N/A"} ms - ${span.label}`;
-  });
-  msg += tsMsg.join("");
-  if (duration > 1000) {
-    app.logger.warn(msg);
-  } else {
-    app.logger.debug(msg);
-  }
-});
+app.useTimerMiddleware();
 app.mapController(controllers);
 app.run(parseInt(app.env.get("PORT")));

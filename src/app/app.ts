@@ -8,11 +8,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import onFinished from "on-finished";
 import { ILogger } from "../logger";
-import {
-  EmpackExceptionMiddleware,
-  EmpackMiddleware,
-  IEnv,
-} from "./interfaces";
+import { EmpackMiddleware, IEnv } from "./interfaces";
 import {
   IPublisherSymbol,
   ISenderSymbol,
@@ -425,17 +421,9 @@ export class App {
   };
 
   useMiddleware(
-    middleware:
-      | EmpackMiddlewareFunction
-      | EmpackMiddleware
-      | EmpackExceptionMiddlewareFunction
-      | EmpackExceptionMiddleware,
+    middleware: EmpackMiddlewareFunction | EmpackExceptionMiddlewareFunction,
   ) {
-    if (typeof middleware == "function") {
-      this._app.use(middleware);
-    } else {
-      this._app.use(middleware.use);
-    }
+    this._app.use(middleware);
     return this;
   }
 

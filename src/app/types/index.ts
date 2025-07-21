@@ -32,3 +32,5 @@ export type TimerHanlder = (
   req: Request,
   res: Response,
 ) => void;
+
+export type WsAuthResult = true | { code: number; reason: string | Buffer };

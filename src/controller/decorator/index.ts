@@ -14,6 +14,9 @@ import {
   RouteDefinition,
 } from "../types";
 
+export const WSCONTROLLER_METADATA = {
+  PATH: Symbol.for("empack:ws_controller_path"),
+};
 export const ANONYMOUS_KEY = Symbol("empack:anonymous");
 export const CONTROLLER_METADATA = {
   PATH: Symbol("empack:controller_path"),
@@ -30,7 +33,21 @@ export function Controller(
     Reflect.defineMetadata(CONTROLLER_METADATA.PATH, path, target);
     Reflect.defineMetadata(CONTROLLER_METADATA.MIDDLEWARE, middleware, target);
     injectable()(target);
-    injectFromBase()(target);
+    const baseClass = Object.getPrototypeOf(target.prototype)?.constructor;
+    if (baseClass && baseClass !== Object) {
+      injectFromBase()(target);
+    }
+  };
+}
+
+export function WebSocket(path: string): ClassDecorator {
+  return (target) => {
+    Reflect.defineMetadata(WSCONTROLLER_METADATA.PATH, path, target);
+    injectable()(target);
+    const baseClass = Object.getPrototypeOf(target.prototype)?.constructor;
+    if (baseClass && baseClass !== Object) {
+      injectFromBase()(target);
+    }
   };
 }
 

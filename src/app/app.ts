@@ -2,7 +2,8 @@ import express, { Router, NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import "reflect-metadata";
 import { Container, Newable } from "inversify";
-import http from "http";
+import http, { IncomingMessage } from "http";
+import { WebSocket, WebSocketServer } from "ws";
 import { Socket } from "net";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -22,17 +23,33 @@ import {
   ExceptionHandler,
   NotFoundHandler,
   TimerHanlder,
+  WsAuthResult,
 } from "./types";
 import {
   ANONYMOUS_KEY,
   CONTROLLER_METADATA,
   ROUTE_METADATA_KEY,
   RouteDefinition,
+  WSCONTROLLER_METADATA,
 } from "../controller";
 import { Timer, timerStorage } from "../utils";
 import { IEnvSymbol, ILoggerSymbol } from "./symbols";
 import { Module } from "../di";
 import { EventMap, MediatorMap } from "../mediator/types";
+import { IWebSocket, IWsContext } from "../controller/interfaces";
+
+function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
+  handler: T,
+  errorHandler: (err: unknown) => Promise<void> | void,
+): (...args: Parameters<T>) => Promise<void> {
+  return async (...args) => {
+    try {
+      await handler(...args);
+    } catch (err) {
+      await errorHandler(err);
+    }
+  };
+}
 
 function isAnonymous(prototype: any, methodName: string) {
   if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype.constructor)) {
@@ -112,12 +129,22 @@ class Logger implements ILogger {
 
 export class AppOptions {
   routerPrefix: string = "/api";
+  wsPrefix: string = "";
   setTimeout?: number;
+}
+
+export class WsOptions {
+  authHandler?: (req: IncomingMessage) => Promise<WsAuthResult> | WsAuthResult;
+  onError?: (
+    err: any,
+    ws: WebSocket,
+    req: IncomingMessage,
+  ) => void | Promise<void>;
 }
 
 export class App {
   private _app: express.Application;
-  private _server?: http.Server;
+  private _server: http.Server;
   private _connections: Set<Socket>;
   private _exceptionHandler?: ExceptionHandler;
   private _notFoundHandler?: NotFoundHandler;
@@ -142,6 +169,7 @@ export class App {
     this.serviceContainer = new Container({
       autobind: true,
     });
+    this._server = http.createServer(this._app);
     this._bindLogger();
   }
 
@@ -345,6 +373,85 @@ export class App {
     return this;
   }
 
+  enableWebSocket(
+    controllers: Newable<IWebSocket>[],
+    fn?: (opt: WsOptions) => void,
+  ) {
+    const wsMap = new Map<string, Newable<IWebSocket>>();
+    for (const c of controllers) {
+      const path = Reflect.getMetadata(WSCONTROLLER_METADATA.PATH, c);
+      if (!path) throw new Error(`${c.name} is missing @WebSocket Decorator`);
+      wsMap.set(path, c);
+    }
+
+    const options = new WsOptions();
+    if (fn) fn(options);
+
+    const wss = new WebSocketServer({ server: this._server });
+
+    const errorHandler = async (
+      err: any,
+      ws: WebSocket,
+      req: IncomingMessage,
+    ) => {
+      this.logger.error(err);
+      if (options.onError) await options.onError(err, ws, req);
+      if (ws.readyState === WebSocket.OPEN)
+        ws.close(1011, "Internal Server Error");
+    };
+
+    wss.on("connection", (ws, req) => {
+      ws.on("error", (err) => {
+        this.logger.error(err);
+        ws.close(1011, "Internal Server Error");
+      });
+
+      const handleConnection = async () => {
+        const pathname = new URL(req.url!, `ws://localhost`).pathname;
+        const auth = options.authHandler
+          ? await options.authHandler(req)
+          : true;
+        if (auth !== true) {
+          ws.close(auth.code, auth.reason);
+          return;
+        }
+        const ctor = wsMap.get(pathname);
+        if (!ctor)
+          throw new Error(`${pathname} is not a valid websocket route`);
+
+        const instance = await this._createRequestContainer().getAsync(ctor);
+        const { onMessage, onClose } = instance;
+        const ctx: IWsContext = {
+          req,
+          send: (data) => ws.send(data),
+          close: (code, reason) => ws.close(code, reason),
+        };
+        if (onMessage) {
+          ws.on(
+            "message",
+            withWsErrorHandler(onMessage.bind(instance, ctx), (err) =>
+              errorHandler(err, ws, req),
+            ),
+          );
+        }
+        if (onClose) {
+          ws.on(
+            "close",
+            withWsErrorHandler(onClose.bind(instance, ctx), (err) =>
+              errorHandler(err, ws, req),
+            ),
+          );
+        }
+      };
+
+      withWsErrorHandler(handleConnection, (err) =>
+        errorHandler(err, ws, req),
+      )();
+    });
+
+    return this;
+  }
+
   setExceptionHandler(handler: ExceptionHandler) {
     this._exceptionHandler = handler;
     return this;
@@ -466,7 +573,7 @@ export class App {
     this.useMiddleware(this._useExceptionMiddleware);
     this.useMiddleware(this._useNotFoundMiddleware);
 
-    this._server = this._app.listen(port, () => {
+    this._server.listen(port, () => {
       this.logger.info(`Listening on port ${port}`);
     });
 

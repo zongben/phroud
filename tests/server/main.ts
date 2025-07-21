@@ -1,7 +1,7 @@
 import path from "path";
 import { App } from "../../src/app";
 import { Logger, LOGGER_LEVEL } from "../../src/logger";
-import { controllers } from "./controller";
+import { controllers, wsControllers } from "./controller";
 import { handlers } from "./application/handlers";
 import { ScopeTest, ScopeTestSymbol } from "./domain/user/user.root";
 import { JwtModule } from "./infra/jwt";
@@ -42,4 +42,5 @@ app.useJsonParser();
 app.useUrlEncodedParser({ extended: true });
 app.useTimerMiddleware();
 app.mapController(controllers);
+app.enableWebSocket(wsControllers);
 app.run(parseInt(app.env.get("PORT")));

@@ -304,7 +304,7 @@ export class App {
             this._authGuard &&
             !isAnonymous(ControllerClass.prototype, route.handlerName)
           ) {
-            return this._authGuard(req, res, next);
+            return await this._authGuard(req, res, next);
           }
           next();
         };

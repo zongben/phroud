@@ -420,12 +420,17 @@ export class App {
           throw new Error(`${pathname} is not a valid websocket route`);
 
         const instance = await this._createRequestContainer().getAsync(ctor);
-        const { onMessage, onClose } = instance;
+        const { onMessage, onClose, onConnected } = instance;
         const ctx: IWsContext = {
           req,
           send: (data) => ws.send(data),
           close: (code, reason) => ws.close(code, reason),
         };
+        if (onConnected) {
+          withWsErrorHandler(onConnected.bind(instance, ctx, req), (err) =>
+            errorHandler(err, ws, req),
+          )();
+        }
         if (onMessage) {
           ws.on(
             "message",

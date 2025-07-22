@@ -13,9 +13,7 @@
     "test:server": "nodemon tests/server/main.ts"
   },
   "type": "module",
-  "main": "./index.js",
   "exports": {
-    ".": "./index.js",
     "./app": "./app/index.js",
     "./controller": "./controller/index.js",
     "./di": "./di/index.js",
@@ -37,8 +35,7 @@
     "./result",
     "./uploader",
     "./utils",
-    "./validator",
-    "./index.*"
+    "./validator"
   ],
   "devDependencies": {
     "@eslint/js": "^9.31.0",

@@ -13,7 +13,6 @@ import {
   ISenderSymbol,
   Mediator,
   MediatorPipe,
-  MEDIATOR_KEY,
 } from "../mediator/index.js";
 import {
   EmpackExceptionMiddlewareFunction,
@@ -38,6 +37,7 @@ import { EventMap, MediatorMap } from "../mediator/types/index.js";
 import { IWebSocket } from "../controller/interfaces/index.js";
 import { EmpackMiddleware, IEnv } from "./interfaces/index.js";
 import { ILogger } from "../logger/index.js";
+import { MEDIATOR_KEY } from "../mediator/mediator.js";
 
 function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
   handler: T,

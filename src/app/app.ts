@@ -30,13 +30,14 @@ import {
   CONTROLLER_METADATA,
   ROUTE_METADATA_KEY,
   RouteDefinition,
+  WebSocketContext,
   WSCONTROLLER_METADATA,
 } from "../controller";
 import { Timer, timerStorage } from "../utils";
 import { IEnvSymbol, ILoggerSymbol } from "./symbols";
 import { Module } from "../di";
 import { EventMap, MediatorMap } from "../mediator/types";
-import { IWebSocket, IWsContext } from "../controller/interfaces";
+import { IWebSocket } from "../controller/interfaces";
 
 function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
   handler: T,
@@ -421,7 +422,7 @@ export class App {
 
         const instance = await this._createRequestContainer().getAsync(ctor);
         const { onMessage, onClose, onConnected } = instance;
-        const ctx: IWsContext = {
+        const ctx: WebSocketContext = {
           req,
           send: (data) => ws.send(data),
           close: (code, reason) => ws.close(code, reason),

@@ -1,24 +1,18 @@
-import { IncomingMessage } from "http";
 import { RawData } from "ws";
+import { WebSocketContext } from "../types";
 
 export interface IWebSocket {
-  onConnected?(ctx: IWsContext): void | Promise<void>;
+  onConnected?(ctx: WebSocketContext): void | Promise<void>;
 
   onMessage?(
-    ctx: IWsContext,
+    ctx: WebSocketContext,
     data: RawData,
     isBinary: boolean,
   ): void | Promise<void>;
 
   onClose?(
-    ctx: IWsContext,
+    ctx: WebSocketContext,
     code: number,
     reason: string | Buffer,
   ): void | Promise<void>;
-}
-
-export interface IWsContext {
-  req: IncomingMessage;
-  send(data: string | Buffer): void;
-  close(code: number, reason: string | Buffer): void;
 }

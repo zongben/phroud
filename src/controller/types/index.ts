@@ -1,6 +1,7 @@
 import { CookieOptions } from "express";
 import { EmpackMiddleware, EmpackMiddlewareFunction } from "../../app";
 import { Newable } from "../../di";
+import { IncomingMessage } from "http";
 
 export type ResponseWith = {
   cookies?: Cookie[];
@@ -35,3 +36,9 @@ export type ParamSource =
   | "res"
   | "files"
   | "file";
+
+export type WebSocketContext = {
+  req: IncomingMessage;
+  send(data: string | Buffer): void;
+  close(code: number, reason: string | Buffer): void;
+}

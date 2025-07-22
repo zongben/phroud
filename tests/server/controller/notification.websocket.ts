@@ -1,6 +1,6 @@
 import { RawData } from "ws";
-import { WebSocket } from "../../../src/controller";
-import { IWebSocket, IWsContext } from "../../../src/controller/interfaces";
+import { WebSocket, WebSocketContext } from "../../../src/controller";
+import { IWebSocket } from "../../../src/controller/interfaces";
 import { ILoggerSymbol } from "../../../src/app";
 import { ILogger } from "../../../src/logger";
 import { inject } from "../../../src/di";
@@ -9,12 +9,12 @@ import { inject } from "../../../src/di";
 export class NotificationWebSocket implements IWebSocket {
   constructor(@inject(ILoggerSymbol) private logger: ILogger) {}
 
-  onConnected(ctx: IWsContext): void | Promise<void> {
+  onConnected(ctx: WebSocketContext): void | Promise<void> {
     ctx.send(`notification is connected, req:${ctx.req.url}`);
   }
 
   onMessage(
-    ctx: IWsContext,
+    ctx: WebSocketContext,
     data: RawData,
     isBinary: boolean,
   ): void | Promise<void> {

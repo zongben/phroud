@@ -12,9 +12,14 @@
     "pub": "npm run build && npm run copy && cd ./dist && npm publish",
     "test:server": "nodemon tests/server/main.ts"
   },
+  "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
   "exports": {
+    ".": {
+      "import": "./index.js",
+      "types": "./index.d.ts"
+    },
     "./app": {
       "import": "./app/index.js",
       "types": "./app/index.d.ts"

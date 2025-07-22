@@ -24,7 +24,7 @@ export abstract class MediatorPipe {
 }
 
 export abstract class MediatedRequest<TResult> {
-  declare readonly __TYPE_ASSERT__: TResult;
+  declare readonly __TYPE_ASSERT__?: TResult;
 }
 
 export class Mediator implements ISender, IPublisher {

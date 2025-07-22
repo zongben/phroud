@@ -427,7 +427,7 @@ export class App {
           close: (code, reason) => ws.close(code, reason),
         };
         if (onConnected) {
-          withWsErrorHandler(onConnected.bind(instance, ctx, req), (err) =>
+          withWsErrorHandler(onConnected.bind(instance, ctx), (err) =>
             errorHandler(err, ws, req),
           )();
         }

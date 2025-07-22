@@ -2,7 +2,7 @@ import { IncomingMessage } from "http";
 import { RawData } from "ws";
 
 export interface IWebSocket {
-  onConnected?(ctx: IWsContext, req: IncomingMessage): void | Promise<void>;
+  onConnected?(ctx: IWsContext): void | Promise<void>;
 
   onMessage?(
     ctx: IWsContext,

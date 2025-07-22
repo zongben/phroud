@@ -4,14 +4,13 @@ import { IWebSocket, IWsContext } from "../../../src/controller/interfaces";
 import { ILoggerSymbol } from "../../../src/app";
 import { ILogger } from "../../../src/logger";
 import { inject } from "../../../src/di";
-import { IncomingMessage } from "http";
 
 @WebSocket("/notification")
 export class NotificationWebSocket implements IWebSocket {
   constructor(@inject(ILoggerSymbol) private logger: ILogger) {}
 
-  onConnected(ctx: IWsContext, req: IncomingMessage): void | Promise<void> {
-      ctx.send(`notification is connected, req:${req.url}`)
+  onConnected(ctx: IWsContext): void | Promise<void> {
+    ctx.send(`notification is connected, req:${ctx.req.url}`);
   }
 
   onMessage(

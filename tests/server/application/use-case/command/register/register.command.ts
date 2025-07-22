@@ -1,8 +1,8 @@
 import { OneOf } from "../../../../../../src/result";
-import { MediatorRequest } from "../../../../../../src/mediator";
+import { MediatedRequest } from "../../../../../../src/mediator";
 import { RegisterError, RegisterResult } from "./register.result";
 
-export class RegisterCommand extends MediatorRequest<
+export class RegisterCommand extends MediatedRequest<
   OneOf<RegisterResult, RegisterError>
 > {
   readonly account: string;

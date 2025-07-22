@@ -1,6 +1,6 @@
 import { Container, inject, injectable, Newable } from "inversify";
-import { IPublisher, IReqHandler, ISender, ISenderSymbol } from ".";
-import { EventMap, MediatorMap } from "./types";
+import { IPublisher, IReqHandler, ISender, ISenderSymbol } from "./index.js";
+import { EventMap, MediatorMap } from "./types/index.js";
 
 export const MEDIATOR_KEY = {
   handlerFor: Symbol.for("empack:handleFor"),

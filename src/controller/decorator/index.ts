@@ -1,18 +1,14 @@
 import { injectable, injectFromBase, Newable } from "inversify";
-import { BufferResponse, FileResponse, JsonResponse, ResWith } from "..";
-import {
-  Request,
-  Response,
-  NextFunction,
-  EmpackMiddlewareFunction,
-} from "../../app";
-import { EmpackMiddleware } from "../../app";
+import { Request, Response, NextFunction } from "express";
 import {
   ParamMetadata,
   ParamSource,
   ResponseWith,
   RouteDefinition,
-} from "../types";
+} from "../types/index.js";
+import { EmpackMiddleware } from "../../app/interfaces/index.js";
+import { EmpackMiddlewareFunction } from "../../app/types/index.js";
+import { BufferResponse, FileResponse, JsonResponse, ResWith } from "../responses.js";
 
 export const WSCONTROLLER_METADATA = {
   PATH: Symbol.for("empack:ws_controller_path"),

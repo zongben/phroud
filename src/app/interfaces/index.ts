@@ -1,7 +1,4 @@
-import {
-  EmpackExceptionMiddlewareFunction,
-  EmpackMiddlewareFunction,
-} from "../types";
+import { EmpackExceptionMiddlewareFunction, EmpackMiddlewareFunction } from "../types/index.js";
 
 export interface IEnv {
   get(key: string): string;

@@ -4,7 +4,7 @@ import {
   validationResult,
 } from "express-validator";
 import { NextFunction, Request, Response } from "express";
-import { EmpackMiddlewareFunction } from "../app";
+import { EmpackMiddlewareFunction } from "../app/types/index.js";
 
 export const createRule = <T>(
   handler: (key: (k: keyof T) => string) => ValidationChain[],

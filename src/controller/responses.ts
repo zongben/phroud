@@ -1,4 +1,4 @@
-import { ResponseWith } from "./types";
+import { ResponseWith } from "./types/index.js";
 
 export abstract class ResWith {
   private _withData: ResponseWith = {};

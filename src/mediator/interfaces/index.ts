@@ -1,4 +1,4 @@
-import { MediatedRequest } from "../mediator";
+import { MediatedRequest } from "../mediator.js";
 
 export interface ISender {
   send<

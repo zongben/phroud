@@ -1,5 +1,5 @@
-import { Newable } from "../../di";
-import { MEDIATOR_KEY } from "../mediator";
+import { Newable } from "../../di/index.js";
+import { MEDIATOR_KEY } from "../mediator.js";
 
 export function HandleFor<TReq>(
   req: new (...args: any[]) => TReq,

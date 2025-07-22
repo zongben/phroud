@@ -1,5 +1,5 @@
 import { RawData } from "ws";
-import { WebSocketContext } from "../types";
+import { WebSocketContext } from "../types/index.js";
 
 export interface IWebSocket {
   onConnected?(ctx: WebSocketContext): void | Promise<void>;

@@ -1,3 +1,3 @@
-export * from "./jwt";
-export * from "./interfaces";
-export * from "./types";
+export * from "./jwt.js";
+export * from "./interfaces/index.js";
+export * from "./types/index.js";

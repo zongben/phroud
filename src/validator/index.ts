@@ -1,2 +1,2 @@
-export * from "./validator";
+export * from "./validator.js";
 export * from "express-validator";

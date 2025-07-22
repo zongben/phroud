@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { TimeSpan } from "../../utils";
+import { TimeSpan } from "../../utils/types/index.js";
 
 export type HandlerResult = {
   statusCode?: number;

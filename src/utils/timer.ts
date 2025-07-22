@@ -1,6 +1,6 @@
 import { performance } from "node:perf_hooks";
-import { TimeSpan } from "./types";
 import { AsyncLocalStorage } from "node:async_hooks";
+import { TimeSpan } from "./types/index.js";
 
 export const timerStorage = new AsyncLocalStorage<Timer>();
 

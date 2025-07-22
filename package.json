@@ -13,16 +13,46 @@
     "test:server": "nodemon tests/server/main.ts"
   },
   "exports": {
-    "./app": "./app/index.js",
-    "./controller": "./controller/index.js",
-    "./di": "./di/index.js",
-    "./jwt": "./jwt/index.js",
-    "./logger": "./logger/index.js",
-    "./mediator": "./mediator/index.js",
-    "./result": "./result/index.js",
-    "./uploader": "./uploader/index.js",
-    "./utils": "./utils/index.js",
-    "./validator": "./validator/index.js"
+    "./app": {
+      "import": "./app/index.js",
+      "types": "./app/index.d.ts"
+    },
+    "./controller": {
+      "import": "./controller/index.js",
+      "types": "./controller/index.d.ts"
+    },
+    "./di": {
+      "import": "./di/index.js",
+      "types": "./di/index.d.ts"
+    },
+    "./jwt": {
+      "import": "./jwt/index.js",
+      "types": "./jwt/index.d.ts"
+    },
+    "./logger": {
+      "import": "./logger/index.js",
+      "types": "./logger/index.d.ts"
+    },
+    "./mediator": {
+      "import": "./mediator/index.js",
+      "types": "./mediator/index.d.ts"
+    },
+    "./result": {
+      "import": "./result/index.js",
+      "types": "./result/index.d.ts"
+    },
+    "./uploader": {
+      "import": "./uploader/index.js",
+      "types": "./uploader/index.d.ts"
+    },
+    "./utils": {
+      "import": "./utils/index.js",
+      "types": "./utils/index.d.ts"
+    },
+    "./validator": {
+      "import": "./validator/index.js",
+      "types": "./validator/index.d.ts"
+    }
   },
   "files": [
     "./app",

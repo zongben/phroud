@@ -1,6 +1,6 @@
 import { inject } from "../../../../../../src/di";
 import { HandleFor, IReqHandler } from "../../../../../../src/mediator";
-import { ErrorReturn, OkReturn, Result } from "../../../../../../src/result";
+import { ErrorReturn, OkReturn, OneOf } from "../../../../../../src/result";
 import { TrackClassMethods, uuid } from "../../../../../../src/utils";
 import { UserRepository } from "../../../../infra/repository/user.repository";
 import { ErrorCodes } from "../../../error-codes";
@@ -16,7 +16,7 @@ import {
 @HandleFor(RegisterCommand)
 @TrackClassMethods()
 export class RegisterHandler
-  implements IReqHandler<RegisterCommand, Result<RegisterResult, RegisterError>>
+  implements IReqHandler<RegisterCommand, OneOf<RegisterResult, RegisterError>>
 {
   constructor(
     @inject(UserRepository) private readonly _userRepository: IUserRepository,
@@ -25,7 +25,7 @@ export class RegisterHandler
 
   async handle(
     req: RegisterCommand,
-  ): Promise<Result<RegisterResult, RegisterError>> {
+  ): Promise<OneOf<RegisterResult, RegisterError>> {
     console.log("after mediator: ", this._scopeTest.index);
 
     const isUserExist =

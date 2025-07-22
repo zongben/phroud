@@ -1,4 +1,4 @@
-import { ErrorResult, OkResult, Result } from "./types";
+import { ErrorResult, OkResult, OneOf } from "./types";
 
 export class ErrorReturn<E> implements ErrorResult<E> {
   isSuccess: false;
@@ -21,7 +21,7 @@ export class OkReturn<T> implements OkResult<T> {
 }
 
 export const matchResult = <T, E extends string | number | symbol, R>(
-  result: Result<T, E>,
+  result: OneOf<T, E>,
   handlers: {
     ok: (value: T) => R;
     err: Record<E, (error: E) => R>;

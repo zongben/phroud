@@ -8,4 +8,4 @@ export type ErrorResult<E> = {
   error: E;
 };
 
-export type Result<T, E> = OkResult<T> | ErrorResult<E>;
+export type OneOf<T, E> = OkResult<T> | ErrorResult<E>;

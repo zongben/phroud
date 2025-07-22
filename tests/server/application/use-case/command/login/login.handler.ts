@@ -1,7 +1,7 @@
 import { inject } from "../../../../../../src/di";
 import { IJwTokenHelper } from "../../../../../../src/jwt";
 import { HandleFor, IPublisher, IPublisherSymbol, IReqHandler } from "../../../../../../src/mediator";
-import { ErrorReturn, OkReturn, Result } from "../../../../../../src/result";
+import { ErrorReturn, OkReturn, OneOf } from "../../../../../../src/result";
 import { TrackClassMethods } from "../../../../../../src/utils";
 import { AccessTokenSymbol, RefreshTokenSymbol } from "../../../../infra/jwt";
 import { UserRepository } from "../../../../infra/repository/user.repository";
@@ -14,7 +14,7 @@ import { LoginError, LoginResult } from "./login.result";
 @HandleFor(LoginCommand)
 @TrackClassMethods()
 export class LoginHandler
-  implements IReqHandler<LoginCommand, Result<LoginResult, LoginError>>
+  implements IReqHandler<LoginCommand, OneOf<LoginResult, LoginError>>
 {
   constructor(
     @inject(IPublisherSymbol) private _publisher: IPublisher,
@@ -25,7 +25,7 @@ export class LoginHandler
     private _refreshTokenHelper: IJwTokenHelper,
   ) {}
 
-  async handle(req: LoginCommand): Promise<Result<LoginResult, LoginError>> {
+  async handle(req: LoginCommand): Promise<OneOf<LoginResult, LoginError>> {
     const user = await this._userRepository.getByAccount(req.account);
     if (!user)
       return new ErrorReturn<LoginError>(

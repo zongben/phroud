@@ -11,8 +11,8 @@ export abstract class MediatedController {
   @inject(ISenderSymbol) private readonly _sender!: ISender;
 
   async dispatch<
-    TReq extends Request<TRes>,
-    TRes = TReq extends Request<infer R> ? R : never,
+    TReq extends MediatorRequest<TRes>,
+    TRes = TReq extends MediatorRequest<infer R> ? R : never,
   >(req: TReq): Promise<TRes> {
     return await this._sender.send(req);
   }
@@ -23,7 +23,7 @@ export abstract class MediatorPipe {
   abstract handle(req: any, next: any): Promise<any>;
 }
 
-export abstract class Request<TResult> {
+export abstract class MediatorRequest<TResult> {
   //Do not delete this line, this is for TS type assert!!!
   private __TYPE_ASSERT?: TResult;
 }

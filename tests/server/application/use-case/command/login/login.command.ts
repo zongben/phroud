@@ -1,8 +1,8 @@
-import { Request } from "../../../../../../src/mediator";
-import { Result } from "../../../../../../src/result";
+import { MediatorRequest } from "../../../../../../src/mediator";
+import { OneOf } from "../../../../../../src/result";
 import { LoginError, LoginResult } from "./login.result";
 
-export class LoginCommand extends Request<Result<LoginResult, LoginError>> {
+export class LoginCommand extends MediatorRequest<OneOf<LoginResult, LoginError>> {
   readonly account: string;
   readonly password: string;
 

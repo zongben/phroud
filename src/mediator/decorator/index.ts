@@ -1,4 +1,4 @@
-import { Newable } from "../../di/index.js";
+import { Newable } from "inversify";
 import { MEDIATOR_KEY } from "../mediator.js";
 
 export function HandleFor<TReq>(

@@ -1,8 +1,8 @@
 import { CookieOptions } from "express";
 import { IncomingMessage } from "http";
-import { Newable } from "../../di/index.js";
 import { EmpackMiddleware } from "../../app/interfaces/index.js";
 import { EmpackMiddlewareFunction } from "../../app/types/index.js";
+import { Newable } from "inversify";
 
 export type ResponseWith = {
   cookies?: Cookie[];

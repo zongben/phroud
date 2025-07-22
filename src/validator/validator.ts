@@ -6,19 +6,19 @@ import {
 import { NextFunction, Request, Response } from "express";
 import { EmpackMiddlewareFunction } from "../app/types/index.js";
 
-export const createRule = <T>(
+export function createRule<T>(
   handler: (key: (k: keyof T) => string) => ValidationChain[],
-): ValidationChain[] => {
+): ValidationChain[] {
   return handler((k) => k as string);
-};
+}
 
-export const validate = <T = any>(
+export function validate<T = any>(
   chains: ValidationChain[],
   options?: {
     status?: number;
     handler?: (errors: ValidationError[]) => T;
   },
-): EmpackMiddlewareFunction => {
+): EmpackMiddlewareFunction {
   return async (req: Request, res: Response, next: NextFunction) => {
     for (const chain of chains) {
       await chain.run(req);
@@ -36,4 +36,4 @@ export const validate = <T = any>(
     }
     next();
   };
-};
+}

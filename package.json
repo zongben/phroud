@@ -39,7 +39,7 @@
     "./uploader",
     "./utils",
     "./validator",
-    "./index.js"
+    "./index.*"
   ],
   "devDependencies": {
     "@eslint/js": "^9.31.0",

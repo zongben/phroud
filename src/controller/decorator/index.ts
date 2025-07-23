@@ -8,7 +8,13 @@ import {
 } from "../types/index";
 import { EmpackMiddleware } from "../../app/interfaces/index";
 import { EmpackMiddlewareFunction } from "../../app/types/index";
-import { BufferResponse, FileResponse, JsonResponse, ResWith } from "../responses";
+import {
+  BufferResponse,
+  FileResponse,
+  JsonResponse,
+  RedirectResponse,
+  ResWith,
+} from "../responses";
 
 export const WSCONTROLLER_METADATA = {
   PATH: Symbol.for("empack:ws_controller_path"),
@@ -186,6 +192,9 @@ function createRouteDecorator(method: RouteDefinition["method"]) {
           }
           if (result instanceof BufferResponse) {
             return res.end(result.data);
+          }
+          if (result instanceof RedirectResponse) {
+            return res.redirect(result.status, result.url);
           }
         } catch (err) {
           next(err);

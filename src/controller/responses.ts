@@ -19,6 +19,16 @@ export abstract class ResWith {
   }
 }
 
+export class RedirectResponse extends ResWith {
+  status: number;
+  url: string;
+  constructor(url: string, status: number) {
+    super();
+    this.status = status;
+    this.url = url;
+  }
+}
+
 export class JsonResponse extends ResWith {
   status: number;
   body: any;
@@ -90,6 +100,10 @@ export class Responses {
 
   static Conflict<T = any>(error: T) {
     return new JsonResponse(409, error);
+  }
+
+  static Redirect(url: string) {
+    return new RedirectResponse(url, 302);
   }
 
   static File(fileName: string, filePath: string) {

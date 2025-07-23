@@ -79,7 +79,7 @@ async function resolveMiddleware(
 function asyncMiddlewareWrapper(
   container: Container,
   middleware: Newable<EmpackMiddleware> | EmpackMiddlewareFunction,
-) {
+): EmpackMiddlewareFunction {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const fn = await resolveMiddleware(container, middleware);

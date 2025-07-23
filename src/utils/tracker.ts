@@ -1,4 +1,4 @@
-import { Timer } from "./timer.js";
+import { Timer } from "./timer";
 
 export function TrackClassMethods(): ClassDecorator {
   return (target: any) => {

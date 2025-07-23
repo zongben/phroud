@@ -1,6 +1,7 @@
 import { inject } from "../../../../../../src/di";
 import { IJwTokenHelper } from "../../../../../../src/jwt";
-import { HandleFor, IPublisher, IPublisherSymbol, IReqHandler } from "../../../../../../src/mediator";
+import { HandleFor, IPublisher, IPublisherSymbol } from "../../../../../../src/mediator";
+import { IReqHandler } from "../../../../../../src/mediator/mediator";
 import { ErrorReturn, OkReturn, OneOf } from "../../../../../../src/result";
 import { TrackClassMethods } from "../../../../../../src/utils";
 import { AccessTokenSymbol, RefreshTokenSymbol } from "../../../../infra/jwt";

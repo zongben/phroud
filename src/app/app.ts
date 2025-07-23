@@ -13,7 +13,7 @@ import {
   ISenderSymbol,
   Mediator,
   MediatorPipe,
-} from "../mediator/index.js";
+} from "../mediator/index";
 import {
   EmpackExceptionMiddlewareFunction,
   EmpackMiddlewareFunction,
@@ -21,7 +21,7 @@ import {
   NotFoundHandler,
   TimerHanlder,
   WsAuthResult,
-} from "./types/index.js";
+} from "./types/index";
 import {
   ANONYMOUS_KEY,
   CONTROLLER_METADATA,
@@ -29,15 +29,15 @@ import {
   RouteDefinition,
   WebSocketContext,
   WSCONTROLLER_METADATA,
-} from "../controller/index.js";
-import { Timer, timerStorage } from "../utils/index.js";
-import { IEnvSymbol, ILoggerSymbol } from "./symbols/index.js";
-import { Module } from "../di/index.js";
-import { EventMap, MediatorMap } from "../mediator/types/index.js";
-import { IWebSocket } from "../controller/interfaces/index.js";
-import { EmpackMiddleware, IEnv } from "./interfaces/index.js";
-import { ILogger } from "../logger/index.js";
-import { MEDIATOR_KEY } from "../mediator/mediator.js";
+} from "../controller/index";
+import { Timer, timerStorage } from "../utils/index";
+import { IEnvSymbol, ILoggerSymbol } from "./symbols/index";
+import { Module } from "../di/index";
+import { EventMap, MediatorMap } from "../mediator/types/index";
+import { IWebSocket } from "../controller/interfaces/index";
+import { EmpackMiddleware, IEnv } from "./interfaces/index";
+import { ILogger } from "../logger/index";
+import { MEDIATOR_KEY } from "../mediator/mediator";
 
 function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
   handler: T,

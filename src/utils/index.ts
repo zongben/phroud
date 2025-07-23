@@ -1,4 +1,4 @@
-export * from "./types/index.js";
-export { uuid } from "./uuid.js";
-export { Timer, timerStorage } from "./timer.js";
-export { TrackMethod, TrackClassMethods } from "./tracker.js";
+export * from "./types/index";
+export * from "./uuid";
+export * from "./timer";
+export * from "./tracker";

@@ -1,2 +1,2 @@
-export { matchResult, OkReturn, ErrorReturn } from "./result.js";
-export * from "./types/index.js";
+export * from "./result";
+export * from "./types/index";

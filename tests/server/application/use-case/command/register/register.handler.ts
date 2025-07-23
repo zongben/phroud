@@ -1,5 +1,5 @@
 import { inject } from "../../../../../../src/di";
-import { HandleFor, IReqHandler } from "../../../../../../src/mediator";
+import { HandleFor } from "../../../../../../src/mediator";
 import { ErrorReturn, OkReturn, OneOf } from "../../../../../../src/result";
 import { TrackClassMethods, uuid } from "../../../../../../src/utils";
 import { UserRepository } from "../../../../infra/repository/user.repository";
@@ -12,6 +12,7 @@ import {
   ScopeTestSymbol,
   UserRoot,
 } from "../../../../domain/user/user.root";
+import { IReqHandler } from "../../../../../../src/mediator/mediator";
 
 @HandleFor(RegisterCommand)
 @TrackClassMethods()

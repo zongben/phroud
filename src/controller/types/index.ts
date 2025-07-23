@@ -1,7 +1,7 @@
 import { CookieOptions } from "express";
 import { IncomingMessage } from "http";
-import { EmpackMiddleware } from "../../app/interfaces/index.js";
-import { EmpackMiddlewareFunction } from "../../app/types/index.js";
+import { EmpackMiddleware } from "../../app/interfaces/index";
+import { EmpackMiddlewareFunction } from "../../app/types/index";
 import { Newable } from "inversify";
 
 export type ResponseWith = {

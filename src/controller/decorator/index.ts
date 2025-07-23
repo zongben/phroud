@@ -5,10 +5,10 @@ import {
   ParamSource,
   ResponseWith,
   RouteDefinition,
-} from "../types/index.js";
-import { EmpackMiddleware } from "../../app/interfaces/index.js";
-import { EmpackMiddlewareFunction } from "../../app/types/index.js";
-import { BufferResponse, FileResponse, JsonResponse, ResWith } from "../responses.js";
+} from "../types/index";
+import { EmpackMiddleware } from "../../app/interfaces/index";
+import { EmpackMiddlewareFunction } from "../../app/types/index";
+import { BufferResponse, FileResponse, JsonResponse, ResWith } from "../responses";
 
 export const WSCONTROLLER_METADATA = {
   PATH: Symbol.for("empack:ws_controller_path"),
@@ -36,7 +36,7 @@ export function Controller(
   };
 }
 
-export function WebSocket(path: string): ClassDecorator {
+export function WsController(path: string): ClassDecorator {
   return (target) => {
     Reflect.defineMetadata(WSCONTROLLER_METADATA.PATH, path, target);
     injectable()(target);

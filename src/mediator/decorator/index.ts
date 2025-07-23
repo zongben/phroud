@@ -1,5 +1,5 @@
 import { Newable } from "inversify";
-import { MEDIATOR_KEY } from "../mediator.js";
+import { MEDIATOR_KEY } from "../mediator";
 
 export function HandleFor<TReq>(
   req: new (...args: any[]) => TReq,

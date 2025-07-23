@@ -1,4 +1,4 @@
-import { uploader } from "./index.js";
+import { uploader } from "./index";
 
 export function createMulter(storage?: uploader.DiskStorageOptions) {
   const engine = storage

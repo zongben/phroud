@@ -1,4 +1,4 @@
-import { ErrorResult, OkResult, OneOf } from "./types/index.js";
+import { ErrorResult, OkResult, OneOf } from "./types/index";
 
 export class ErrorReturn<E> implements ErrorResult<E> {
   isSuccess: false;

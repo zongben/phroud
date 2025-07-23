@@ -2,7 +2,7 @@ import winston from "winston";
 import "dotenv/config";
 import "winston-daily-rotate-file";
 import DailyRotateFile from "winston-daily-rotate-file";
-import { ILogger } from "./interfaces/index.js";
+import { ILogger } from "./interfaces/index";
 
 export enum LOGGER_LEVEL {
   DEBUG = "debug",

@@ -10,4 +10,12 @@ export default defineConfig({
   sourcemap: false,
   clean: true,
   target: "es2020",
+  esbuildOptions(options, context) {
+    if (context.format === "esm") {
+      options.outExtension = { ".js": ".mjs" };
+    }
+    if (context.format === "cjs") {
+      options.outExtension = { ".js": ".js" };
+    }
+  },
 });

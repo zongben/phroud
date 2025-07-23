@@ -1,5 +1,5 @@
-import { BindingFluentAPI } from "./interfaces/index.js";
-import { ContainerModule } from "./types/index.js";
+import { BindingFluentAPI } from "./interfaces/index";
+import { ContainerModule } from "./types/index";
 
 export abstract class Module {
   private binder: ContainerModule[] = [];

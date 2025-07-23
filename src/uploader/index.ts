@@ -1,4 +1,4 @@
 import uploader from "multer";
 
 export { uploader };
-export { createMulter } from "./uploader.js";
+export * from "./uploader";

@@ -1,11 +1,10 @@
-import { RawData } from "ws";
-import { WebSocket, WebSocketContext } from "../../../src/controller";
+import { WsController, WebSocketContext } from "../../../src/controller";
 import { IWebSocket } from "../../../src/controller/interfaces";
-import { ILoggerSymbol } from "../../../src/app";
+import { ILoggerSymbol, RawData } from "../../../src/app";
 import { ILogger } from "../../../src/logger";
 import { inject } from "../../../src/di";
 
-@WebSocket("/notification")
+@WsController("/notification")
 export class NotificationWebSocket implements IWebSocket {
   constructor(@inject(ILoggerSymbol) private logger: ILogger) {}
 

@@ -6,39 +6,22 @@
     "url": "git+https://github.com/zongben/empack.git"
   },
   "scripts": {
-    "build": "npx tsc -p tsconfig.build.json",
+    "build": "tsup",
     "copy": "cp ./package.json ./README.md ./LICENSE ./dist/",
     "pack": "npm run build && npm run copy && cd ./dist && npm pack",
     "pub": "npm run build && npm run copy && cd ./dist && npm publish",
     "test:server": "nodemon tests/server/main.ts"
   },
-  "type": "module",
   "main": "./index.js",
+  "module": "./index.mjs",
   "types": "./index.d.ts",
   "exports": {
-    ".": "./index.js",
-    "./app": "./app/index.js",
-    "./controller": "./controller/index.js",
-    "./di": "./di/index.js",
-    "./jwt": "./jwt/index.js",
-    "./logger": "./logger/index.js",
-    "./mediator": "./mediator/index.js",
-    "./result": "./result/index.js",
-    "./uploader": "./uploader/index.js",
-    "./utils": "./utils/index.js",
-    "./validator": "./validator/index.js"
+    ".": {
+      "require": "./index.js",
+      "import": "./index.mjs"
+    }
   },
   "files": [
-    "./app",
-    "./controller",
-    "./di",
-    "./jwt",
-    "./logger",
-    "./mediator",
-    "./result",
-    "./uploader",
-    "./utils",
-    "./validator",
     "./index.*"
   ],
   "devDependencies": {
@@ -60,6 +43,7 @@
     "reflect-metadata": "^0.2.2",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
+    "tsup": "^8.5.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0"
   },

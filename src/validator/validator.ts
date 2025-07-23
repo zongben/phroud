@@ -6,18 +6,20 @@ import {
 import { NextFunction, Request, Response } from "express";
 import { EmpackMiddlewareFunction } from "../app/types/index";
 
+export type ValidationFailResponse<T> = {
+  status: number;
+  data: T;
+};
+
 export function createRule<T>(
-  handler: (key: (k: keyof T) => string) => ValidationChain[],
+  handler: (key: <K extends keyof T>(k: K) => K) => ValidationChain[],
 ): ValidationChain[] {
-  return handler((k) => k as string);
+  return handler((k) => k);
 }
 
 export function validate<T = any>(
   chains: ValidationChain[],
-  options?: {
-    status?: number;
-    handler?: (errors: ValidationError[]) => T;
-  },
+  handler?: (errors: ValidationError[]) => ValidationFailResponse<T>,
 ): EmpackMiddlewareFunction {
   return async (req: Request, res: Response, next: NextFunction) => {
     for (const chain of chains) {
@@ -25,13 +27,14 @@ export function validate<T = any>(
     }
     const errs = validationResult(req);
     if (!errs.isEmpty()) {
-      res
-        .status(options?.status ?? 400)
-        .json(
-          options?.handler
-            ? options.handler(errs.array())
-            : errs.array().map((x) => x.msg),
-        );
+      let status: number | undefined = undefined;
+      let data: any = undefined;
+      if (handler) {
+        const result = handler(errs.array());
+        status = result.status;
+        data = result.data;
+      }
+      res.status(status ?? 400).json(data ?? errs.array().map((x) => x.msg));
       return;
     }
     next();

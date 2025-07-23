@@ -7,9 +7,9 @@ export type LoginReq = {
   password: string;
 };
 
-export const LoginRule = createRule<LoginReq>((req) => {
+export const LoginRule = createRule<LoginReq>((key) => {
   return [
-    body(req("account"))
+    body(key("account"))
       .notEmpty()
       .withMessage(
         new ErrorBody({
@@ -17,7 +17,7 @@ export const LoginRule = createRule<LoginReq>((req) => {
           message: "Account is required",
         }),
       ),
-    body(req("password"))
+    body(key("password"))
       .notEmpty()
       .withMessage(
         new ErrorBody({

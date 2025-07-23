@@ -8,9 +8,9 @@ export type RegisterReq = {
   username: string;
 };
 
-export const RegisterRule = createRule<RegisterReq>((req) => {
+export const RegisterRule = createRule<RegisterReq>((key) => {
   return [
-    body(req("account"))
+    body(key("account"))
       .notEmpty()
       .withMessage(
         new ErrorBody({
@@ -18,7 +18,7 @@ export const RegisterRule = createRule<RegisterReq>((req) => {
           message: "Account is required",
         }),
       ),
-    body(req("password"))
+    body(key("password"))
       .notEmpty()
       .withMessage(
         new ErrorBody({
@@ -33,7 +33,7 @@ export const RegisterRule = createRule<RegisterReq>((req) => {
           message: "Password must be at least 6 characters long",
         }),
       ),
-    body(req("username"))
+    body(key("username"))
       .notEmpty()
       .withMessage(
         new ErrorBody({

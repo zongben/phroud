@@ -1,7 +1,7 @@
 import { injectable, injectFromBase, Newable } from "inversify";
 import { Request, Response, NextFunction } from "express";
 import {
-  GuardDefinition,
+  GuardMiddleware,
   ParamMetadata,
   ParamSource,
   ResponseWith,
@@ -56,7 +56,7 @@ export function WsController(path: string): ClassDecorator {
 }
 
 export function Guard(
-  guard: GuardDefinition,
+  guard: GuardMiddleware,
 ): ClassDecorator & MethodDecorator {
   return (target: object, propertyKey?: string | symbol) => {
     const hasExisting =

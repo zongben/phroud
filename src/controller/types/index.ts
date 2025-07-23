@@ -4,7 +4,7 @@ import { EmpackMiddleware } from "../../app/interfaces/index";
 import { EmpackMiddlewareFunction } from "../../app/types/index";
 import { Newable } from "inversify";
 
-export type GuardDefinition =
+export type GuardMiddleware =
   | Newable<EmpackMiddleware>
   | EmpackMiddlewareFunction
   | "none";

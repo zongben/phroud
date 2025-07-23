@@ -25,7 +25,7 @@ import {
 import {
   CONTROLLER_METADATA,
   GUARD_KEY,
-  GuardDefinition,
+  GuardMiddleware,
   ROUTE_METADATA_KEY,
   RouteDefinition,
   WebSocketContext,
@@ -135,6 +135,7 @@ export class App {
     post?: Newable<MediatorPipe>[];
   };
   private _isAuthGuardEnabled: boolean;
+  private _defaultGuard?: GuardMiddleware;
   logger: ILogger;
   env!: IEnv;
   serviceContainer: Container;
@@ -303,6 +304,7 @@ export class App {
 
       const router = Router({ mergeParams: true });
 
+      router.use(createRequestScopeContainer);
       for (const route of routes) {
         let guardMiddleware:
           | EmpackMiddlewareFunction
@@ -316,10 +318,11 @@ export class App {
             route.handlerName,
           );
           const classGuard = Reflect.getMetadata(GUARD_KEY, ControllerClass);
-          const guard: GuardDefinition = methodGuard ?? classGuard;
+          const guard: GuardMiddleware =
+            methodGuard ?? classGuard ?? this._defaultGuard;
           if (!guard) {
             throw new Error(
-              `AuthGuard is enabled, ${ControllerClass.name} or ${ControllerClass.name}.${route.handlerName} must define a @Guard decorator`,
+              `AuthGuard is enabled, without default guard ${ControllerClass.name} or ${ControllerClass.name}.${route.handlerName} must define a @Guard decorator`,
             );
           }
           if (guard !== "none") {
@@ -332,10 +335,13 @@ export class App {
           ...classMiddleware,
           ...(route.middleware ?? []),
         ].map((m) => {
-          return (req: any, res: any, next: any) => {
-            resolveMiddleware(req._container, m)
-              .then((fn) => fn(req, res, next))
-              .catch(next);
+          return async (req: any, res: any, next: any) => {
+            try {
+              const fn = await resolveMiddleware(req._container, m);
+              await fn(req, res, next);
+            } catch (err) {
+              next(err);
+            }
           };
         });
 
@@ -348,12 +354,7 @@ export class App {
           }
         };
 
-        router[route.method](
-          route.path,
-          createRequestScopeContainer,
-          ...middlewares,
-          handler,
-        );
+        router[route.method](route.path, ...middlewares, handler);
       }
 
       const fullMountPath = `${this.options.routerPrefix}/${controllerPath}`
@@ -546,8 +547,9 @@ export class App {
     return this;
   }
 
-  enableAuthGuard() {
+  enableAuthGuard(defaultGuard?: GuardMiddleware) {
     this._isAuthGuardEnabled = true;
+    this._defaultGuard = defaultGuard;
     return this;
   }
 

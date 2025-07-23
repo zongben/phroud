@@ -1,6 +1,7 @@
 import { injectable, injectFromBase, Newable } from "inversify";
 import { Request, Response, NextFunction } from "express";
 import {
+  GuardDefinition,
   ParamMetadata,
   ParamSource,
   ResponseWith,
@@ -26,6 +27,7 @@ export const CONTROLLER_METADATA = {
 };
 export const PARAM_METADATA_KEY = Symbol("empack:param_metadata");
 export const ROUTE_METADATA_KEY = Symbol("empack:route_metadata");
+export const GUARD_KEY = Symbol.for("empack:guard");
 
 export function Controller(
   path: string,
@@ -53,6 +55,33 @@ export function WsController(path: string): ClassDecorator {
   };
 }
 
+export function Guard(
+  guard: GuardDefinition,
+): ClassDecorator & MethodDecorator {
+  return (target: object, propertyKey?: string | symbol) => {
+    const hasExisting =
+      propertyKey !== undefined
+        ? Reflect.hasMetadata(GUARD_KEY, target, propertyKey)
+        : Reflect.hasMetadata(GUARD_KEY, target);
+
+    if (hasExisting) {
+      const targetLabel =
+        propertyKey !== undefined
+          ? `${target.constructor.name}.${String(propertyKey)}`
+          : `${(target as any).name ?? "AnonymousClass"}`;
+      throw new Error(
+        `Duplicate @Guard() detected on ${targetLabel}. Each method or class can only have one guard.`,
+      );
+    }
+
+    if (propertyKey) {
+      Reflect.defineMetadata(GUARD_KEY, guard, target, propertyKey);
+    } else {
+      Reflect.defineMetadata(GUARD_KEY, guard, target);
+    }
+  };
+}
+
 export const FromBody = createParamDecorator("body");
 export const FromQuery = createParamDecorator("query");
 export const FromParam = createParamDecorator("param");
@@ -66,16 +95,6 @@ export const Get = createRouteDecorator("get");
 export const Post = createRouteDecorator("post");
 export const Put = createRouteDecorator("put");
 export const Delete = createRouteDecorator("delete");
-
-export function Anonymous(): ClassDecorator & MethodDecorator {
-  return (target: any, propertyKey?: string | symbol) => {
-    if (propertyKey) {
-      Reflect.defineMetadata(ANONYMOUS_KEY, true, target, propertyKey);
-    } else {
-      Reflect.defineMetadata(ANONYMOUS_KEY, true, target);
-    }
-  };
-}
 
 function createParamDecorator(source: ParamSource) {
   return function (name?: string): ParameterDecorator {

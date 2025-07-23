@@ -5,7 +5,6 @@ import { controllers, wsControllers } from "./controller";
 import { handlers } from "./application/handlers";
 import { ScopeTest, ScopeTestSymbol } from "./domain/user/user.root";
 import { JwtModule } from "./infra/jwt";
-import { jwtGuard } from "../../src/jwt";
 
 const app = App.createBuilder();
 app.setDotEnv(path.join(__dirname, ".env.test"));
@@ -14,7 +13,7 @@ app.setLogger(
     app.env.get("NODE_ENV") === "dev" ? LOGGER_LEVEL.DEBUG : LOGGER_LEVEL.INFO,
   ),
 );
-app.setAuthGuard(jwtGuard(app.env.get("JWT_SECRET")));
+app.enableAuthGuard();
 app.setMediator(handlers);
 app.addRequestScope(ScopeTestSymbol, ScopeTest);
 app.loadModules(

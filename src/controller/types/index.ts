@@ -4,6 +4,11 @@ import { EmpackMiddleware } from "../../app/interfaces/index";
 import { EmpackMiddlewareFunction } from "../../app/types/index";
 import { Newable } from "inversify";
 
+export type GuardDefinition =
+  | Newable<EmpackMiddleware>
+  | EmpackMiddlewareFunction
+  | "none";
+
 export type ResponseWith = {
   cookies?: Cookie[];
   headers?: Record<string, string>;

@@ -1,11 +1,11 @@
 import {
-  Anonymous,
   FromBody,
   Controller,
   Get,
   Post,
   Responses,
   FromFile,
+  Guard,
 } from "../../../src/controller";
 import { MediatedController } from "../../../src/mediator";
 import { matchResult } from "../../../src/result";
@@ -30,7 +30,7 @@ const multer = createMulter(storage);
 
 @TrackClassMethods()
 @Controller("/auth")
-@Anonymous()
+@Guard("none")
 export class AuthController extends MediatedController {
   constructor(@inject(ScopeTestSymbol) private readonly _scopeTest: ScopeTest) {
     super();

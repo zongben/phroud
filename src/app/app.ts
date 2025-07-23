@@ -23,8 +23,9 @@ import {
   WsAuthResult,
 } from "./types/index";
 import {
-  ANONYMOUS_KEY,
   CONTROLLER_METADATA,
+  GUARD_KEY,
+  GuardDefinition,
   ROUTE_METADATA_KEY,
   RouteDefinition,
   WebSocketContext,
@@ -53,16 +54,6 @@ function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
   };
 }
 
-function isAnonymous(prototype: any, methodName: string) {
-  if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype.constructor)) {
-    return true;
-  }
-  if (Reflect.hasMetadata(ANONYMOUS_KEY, prototype, methodName)) {
-    return true;
-  }
-  return false;
-}
-
 async function resolveMiddleware(
   container: Container,
   middleware: Newable<EmpackMiddleware> | EmpackMiddlewareFunction,
@@ -74,20 +65,6 @@ async function resolveMiddleware(
     return instance.use.bind(instance);
   }
   return middleware as EmpackMiddlewareFunction;
-}
-
-function asyncMiddlewareWrapper(
-  container: Container,
-  middleware: Newable<EmpackMiddleware> | EmpackMiddlewareFunction,
-): EmpackMiddlewareFunction {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const fn = await resolveMiddleware(container, middleware);
-      await fn(req, res, next);
-    } catch (err) {
-      next(err);
-    }
-  };
 }
 
 class Env implements IEnv {
@@ -150,14 +127,14 @@ export class App {
   private _connections: Set<Socket>;
   private _exceptionHandler?: ExceptionHandler;
   private _notFoundHandler?: NotFoundHandler;
-  private _authGuard?: EmpackMiddlewareFunction;
-  private _requestScopeObjects = new Map<symbol, Newable>();
+  private _requestScopeObjects: Map<symbol, Newable>;
   private _mediatorMap: MediatorMap = new Map();
   private _eventMap: EventMap = new Map();
   private _mediatorPipeLine?: {
     pre?: Newable<MediatorPipe>[];
     post?: Newable<MediatorPipe>[];
   };
+  private _isAuthGuardEnabled: boolean;
   logger: ILogger;
   env!: IEnv;
   serviceContainer: Container;
@@ -166,11 +143,13 @@ export class App {
   private constructor(options: AppOptions) {
     this.options = options;
     this._app = express();
+    this._isAuthGuardEnabled = false;
     this._connections = new Set<Socket>();
     this.logger = new Logger();
     this.serviceContainer = new Container({
       autobind: true,
     });
+    this._requestScopeObjects = new Map();
     this._server = http.createServer(this._app);
     this._bindLogger();
   }
@@ -325,17 +304,31 @@ export class App {
       const router = Router({ mergeParams: true });
 
       for (const route of routes) {
-        const guard: EmpackMiddlewareFunction = async (req, res, next) => {
-          if (
-            this._authGuard &&
-            !isAnonymous(ControllerClass.prototype, route.handlerName)
-          ) {
-            return await this._authGuard(req, res, next);
-          }
+        let guardMiddleware:
+          | EmpackMiddlewareFunction
+          | Newable<EmpackMiddleware> = (_req, _res, next) => {
           next();
         };
+        if (this._isAuthGuardEnabled) {
+          const methodGuard = Reflect.getMetadata(
+            GUARD_KEY,
+            ControllerClass.prototype,
+            route.handlerName,
+          );
+          const classGuard = Reflect.getMetadata(GUARD_KEY, ControllerClass);
+          const guard: GuardDefinition = methodGuard ?? classGuard;
+          if (!guard) {
+            throw new Error(
+              `AuthGuard is enabled, ${ControllerClass.name} or ${ControllerClass.name}.${route.handlerName} must define a @Guard decorator`,
+            );
+          }
+          if (guard !== "none") {
+            guardMiddleware = guard;
+          }
+        }
 
         const middlewares = [
+          guardMiddleware,
           ...classMiddleware,
           ...(route.middleware ?? []),
         ].map((m) => {
@@ -357,7 +350,6 @@ export class App {
 
         router[route.method](
           route.path,
-          guard,
           createRequestScopeContainer,
           ...middlewares,
           handler,
@@ -554,8 +546,8 @@ export class App {
     return this;
   }
 
-  setAuthGuard(guard: EmpackMiddlewareFunction | Newable<EmpackMiddleware>) {
-    this._authGuard = asyncMiddlewareWrapper(this.serviceContainer, guard);
+  enableAuthGuard() {
+    this._isAuthGuardEnabled = true;
     return this;
   }
 

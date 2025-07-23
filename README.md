@@ -10,7 +10,7 @@ It comes with a built-in dependency injection container powered by [Inversify](h
 
 Empack also introduces an error-handling model inspired by Rust, encouraging developers to handle errors explicitly using result types instead of relying on `throw` statements.
 
-The framework is designed to provide a fast and lightweight development experience.
+The framework is designed to provide a safe and lightweight development experience.
 
 ## Installation
 

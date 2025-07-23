@@ -40,6 +40,8 @@ export type ParamSource =
 
 export type WebSocketContext = {
   req: IncomingMessage;
+  pathParams: any;
+  queryParams: URLSearchParams;
   send(data: string | Buffer): void;
   close(code: number, reason: string | Buffer): void;
-}
+};

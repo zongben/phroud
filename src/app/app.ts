@@ -38,6 +38,7 @@ import { IWebSocket } from "../controller/interfaces/index";
 import { EmpackMiddleware, IEnv } from "./interfaces/index";
 import { ILogger } from "../logger/index";
 import { MEDIATOR_KEY } from "../mediator/mediator";
+import { match } from "path-to-regexp";
 
 function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
   handler: T,
@@ -381,7 +382,8 @@ export class App {
     const wsMap = new Map<string, Newable<IWebSocket>>();
     for (const c of controllers) {
       const path = Reflect.getMetadata(WSCONTROLLER_METADATA.PATH, c);
-      if (!path) throw new Error(`${c.name} is missing @WebSocket Decorator`);
+      if (!path)
+        throw new Error(`${c.name} is missing @WsController Decorator`);
       wsMap.set(path, c);
     }
 
@@ -408,7 +410,7 @@ export class App {
       });
 
       const handleConnection = async () => {
-        const pathname = new URL(req.url!, `ws://localhost`).pathname;
+        const { pathname, searchParams } = new URL(req.url!, `ws://localhost`);
         const auth = options.authHandler
           ? await options.authHandler(req)
           : true;
@@ -416,7 +418,17 @@ export class App {
           ws.close(auth.code, auth.reason);
           return;
         }
-        const ctor = wsMap.get(pathname);
+
+        let ctor: Newable<IWebSocket> | undefined;
+        let pathParams: any;
+        for (const [pattern, c] of wsMap) {
+          const result = match(pattern)(pathname);
+          if (result) {
+            ctor = c;
+            pathParams = result.params;
+            break;
+          }
+        }
         if (!ctor)
           throw new Error(`${pathname} is not a valid websocket route`);
 
@@ -424,6 +436,8 @@ export class App {
         const { onMessage, onClose, onConnected } = instance;
         const ctx: WebSocketContext = {
           req,
+          pathParams,
+          queryParams: searchParams,
           send: (data) => ws.send(data),
           close: (code, reason) => ws.close(code, reason),
         };

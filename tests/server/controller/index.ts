@@ -1,6 +1,6 @@
 import { AuthController } from "./auth.controller";
-import { NotificationWebSocket } from "./notification.websocket";
+import { ChatWebSocket } from "./chat.websocket";
 
 export const controllers = [AuthController];
 
-export const wsControllers = [NotificationWebSocket];
+export const wsControllers = [ChatWebSocket];

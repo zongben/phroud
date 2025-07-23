@@ -357,7 +357,8 @@ export class App {
         router[route.method](route.path, ...middlewares, handler);
       }
 
-      const fullMountPath = `${this.options.routerPrefix}/${controllerPath}`
+      const prefix = this.options.routerPrefix?.replace(/\/+$/, "") ?? "";
+      const fullMountPath = `${prefix}/${controllerPath}`
         .replace(/\/+/g, "/")
         .toLowerCase();
 

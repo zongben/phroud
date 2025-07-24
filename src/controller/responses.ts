@@ -1,21 +1,21 @@
 import { ResponseWith } from "./types/index";
 
 export abstract class ResWith {
-  private _withData: ResponseWith = {};
+  #withData: ResponseWith = {};
 
   with(data: ResponseWith): this {
-    this._withData = {
+    this.#withData = {
       headers: {
-        ...(this._withData.headers || {}),
+        ...(this.#withData.headers || {}),
         ...(data.headers || {}),
       },
-      cookies: [...(this._withData.cookies || []), ...(data.cookies || [])],
+      cookies: [...(this.#withData.cookies || []), ...(data.cookies || [])],
     };
     return this;
   }
 
   getWithData(): ResponseWith {
-    return this._withData;
+    return this.#withData;
   }
 }
 

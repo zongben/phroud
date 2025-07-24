@@ -9,9 +9,9 @@ import { TimerHanlder, TimeSpan } from ".";
 const timerStorage = new AsyncLocalStorage<Timer>();
 
 export class Timer {
-  private _timeSpans: TimeSpan[] = [];
-  private _stack: number[] = [];
-  private _index = 0;
+  #timeSpans: TimeSpan[] = [];
+  #stack: number[] = [];
+  #index = 0;
 
   private constructor() {}
 
@@ -24,38 +24,38 @@ export class Timer {
   }
 
   start(label: string): number {
-    const id = this._index++;
-    this._timeSpans.push({
+    const id = this.#index++;
+    this.#timeSpans.push({
       id,
       label,
       start: performance.now(),
-      depth: this._stack.length,
+      depth: this.#stack.length,
     });
-    this._stack.push(id);
+    this.#stack.push(id);
     return id;
   }
 
   end(id: number): TimeSpan | undefined {
-    const timeSpan = this._timeSpans[id];
+    const timeSpan = this.#timeSpans[id];
     if (!timeSpan) {
       return;
     }
     timeSpan.end = performance.now();
     timeSpan.duration = timeSpan.end - timeSpan.start;
-    if (this._stack.length > 0 && this._stack[this._stack.length - 1] === id) {
-      this._stack.pop();
+    if (this.#stack.length > 0 && this.#stack[this.#stack.length - 1] === id) {
+      this.#stack.pop();
     }
     return timeSpan;
   }
 
   reset() {
-    this._index = 0;
-    this._stack = [];
-    this._timeSpans = [];
+    this.#index = 0;
+    this.#stack = [];
+    this.#timeSpans = [];
   }
 
   getAllTimeSpans(): TimeSpan[] {
-    return this._timeSpans;
+    return this.#timeSpans;
   }
 }
 

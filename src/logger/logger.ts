@@ -12,7 +12,7 @@ export enum LOGGER_LEVEL {
 }
 
 export class Logger implements ILogger {
-  private logger: winston.Logger;
+  #logger: winston.Logger;
 
   constructor(
     level: LOGGER_LEVEL = LOGGER_LEVEL.INFO,
@@ -30,7 +30,7 @@ export class Logger implements ILogger {
 
     const transport = new winston.transports.DailyRotateFile(options);
 
-    this.logger = winston.createLogger({
+    this.#logger = winston.createLogger({
       format: winston.format.combine(
         winston.format.timestamp({
           format: "YYYY-MM-DD HH:mm:ss",
@@ -45,18 +45,18 @@ export class Logger implements ILogger {
   }
 
   error(err: Error) {
-    this.logger.error(err.stack || err.message);
+    this.#logger.error(err.stack || err.message);
   }
 
   warn(message: string) {
-    this.logger.warn(message);
+    this.#logger.warn(message);
   }
 
   info(message: string) {
-    this.logger.info(message);
+    this.#logger.info(message);
   }
 
   debug(message: string) {
-    this.logger.debug(message);
+    this.#logger.debug(message);
   }
 }

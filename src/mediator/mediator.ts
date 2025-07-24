@@ -34,7 +34,7 @@ export class Mediator implements ISender, IPublisher {
     },
   ) {}
 
-  private async processPipeline<T>(
+  async #processPipeline<T>(
     input: T,
     pipelines?: Newable<MediatorPipe>[],
   ): Promise<T> {
@@ -58,9 +58,9 @@ export class Mediator implements ISender, IPublisher {
       throw new Error("handler not found");
     }
 
-    return await this.processPipeline(req, this.pipeline?.pre)
+    return await this.#processPipeline(req, this.pipeline?.pre)
       .then((input) => this.container.get(handler).handle(input))
-      .then((output) => this.processPipeline(output, this.pipeline?.post));
+      .then((output) => this.#processPipeline(output, this.pipeline?.post));
   }
 
   async publish<T extends object>(event: T): Promise<void> {

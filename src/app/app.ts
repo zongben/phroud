@@ -31,7 +31,12 @@ import { GuardMiddleware } from "../controller";
 import { RouteDefinition, WebSocketContext } from "../controller/types";
 import { Mediator } from "../mediator/mediator";
 import { MEDIATOR_KEY } from "../mediator/decorator";
-import { CONTROLLER_METADATA, GUARD_KEY, ROUTE_METADATA_KEY, WSCONTROLLER_METADATA } from "../controller/decorator";
+import {
+  CONTROLLER_METADATA,
+  GUARD_KEY,
+  ROUTE_METADATA_KEY,
+  WSCONTROLLER_METADATA,
+} from "../controller/decorator";
 
 function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
   handler: T,
@@ -60,15 +65,15 @@ async function resolveMiddleware(
 }
 
 class Env implements IEnv {
-  private _env;
+  #env;
 
   constructor(path: string) {
     dotenv.config({ path });
-    this._env = process.env;
+    this.#env = process.env;
   }
 
   get(key: string): string {
-    const value = this._env[key];
+    const value = this.#env[key];
     if (!value) {
       throw new Error(`Environment variable ${key} is not defined`);
     }
@@ -76,7 +81,7 @@ class Env implements IEnv {
   }
 
   getOptional(key: string): string | undefined {
-    return this._env[key];
+    return this.#env[key];
   }
 }
 
@@ -114,20 +119,20 @@ export class WsOptions {
 }
 
 export class App {
-  private _app: express.Application;
-  private _server: http.Server;
-  private _connections: Set<Socket>;
-  private _exceptionHandler?: ExceptionHandler;
-  private _notFoundHandler?: NotFoundHandler;
-  private _requestScopeObjects: Map<symbol, Newable>;
-  private _mediatorMap: MediatorMap = new Map();
-  private _eventMap: EventMap = new Map();
-  private _mediatorPipeLine?: {
+  #app: express.Application;
+  #server: http.Server;
+  #connections: Set<Socket>;
+  #exceptionHandler?: ExceptionHandler;
+  #notFoundHandler?: NotFoundHandler;
+  #requestScopeObjects: Map<symbol, Newable>;
+  #mediatorMap: MediatorMap = new Map();
+  #eventMap: EventMap = new Map();
+  #mediatorPipeLine?: {
     pre?: Newable<MediatorPipe>[];
     post?: Newable<MediatorPipe>[];
   };
-  private _isAuthGuardEnabled: boolean;
-  private _defaultGuard?: GuardMiddleware;
+  #isAuthGuardEnabled: boolean;
+  #defaultGuard?: GuardMiddleware;
   logger: ILogger;
   env!: IEnv;
   serviceContainer: Container;
@@ -135,16 +140,16 @@ export class App {
 
   private constructor(options: AppOptions) {
     this.options = options;
-    this._app = express();
-    this._isAuthGuardEnabled = false;
-    this._connections = new Set<Socket>();
+    this.#app = express();
+    this.#isAuthGuardEnabled = false;
+    this.#connections = new Set<Socket>();
     this.logger = new Logger();
     this.serviceContainer = new Container({
       autobind: true,
     });
-    this._requestScopeObjects = new Map();
-    this._server = http.createServer(this._app);
-    this._bindLogger();
+    this.#requestScopeObjects = new Map();
+    this.#server = http.createServer(this.#app);
+    this.#bindLogger();
   }
 
   static createBuilder(fn: (options: AppOptions) => void = () => {}) {
@@ -159,7 +164,7 @@ export class App {
   }
 
   addRequestScope(type: symbol, constructor: Newable) {
-    this._requestScopeObjects.set(type, constructor);
+    this.#requestScopeObjects.set(type, constructor);
     return this;
   }
 
@@ -182,25 +187,25 @@ export class App {
 
   setLogger(logger: ILogger) {
     this.logger = logger;
-    this._bindLogger();
+    this.#bindLogger();
     return this;
   }
 
-  private _createRequestContainer(): Container {
+  #createRequestContainer(): Container {
     const child = new Container({
       parent: this.serviceContainer,
       autobind: true,
     });
 
-    for (const [symbol, ctor] of this._requestScopeObjects) {
+    for (const [symbol, ctor] of this.#requestScopeObjects) {
       child.bind(symbol).to(ctor).inSingletonScope();
     }
 
     const mediator = new Mediator(
       child,
-      this._mediatorMap,
-      this._eventMap,
-      this._mediatorPipeLine,
+      this.#mediatorMap,
+      this.#eventMap,
+      this.#mediatorPipeLine,
     );
     child.bind(ISenderSymbol).toConstantValue(mediator);
     child.bind(IPublisherSymbol).toConstantValue(mediator);
@@ -218,14 +223,14 @@ export class App {
     loop: for (const handler of handlers) {
       const reqKey = Reflect.getMetadata(MEDIATOR_KEY.handlerFor, handler);
       if (reqKey) {
-        this._mediatorMap.set(reqKey, handler);
+        this.#mediatorMap.set(reqKey, handler);
         continue loop;
       }
       const eventKey = Reflect.getMetadata(MEDIATOR_KEY.subscribe, handler);
       if (eventKey) {
-        const events = this._eventMap.get(eventKey) ?? [];
+        const events = this.#eventMap.get(eventKey) ?? [];
         events.push(handler);
-        this._eventMap.set(eventKey, events);
+        this.#eventMap.set(eventKey, events);
         continue loop;
       }
       throw new Error(
@@ -233,7 +238,7 @@ export class App {
       );
     }
     if (pipeline) {
-      this._mediatorPipeLine = pipeline;
+      this.#mediatorPipeLine = pipeline;
     }
     return this;
   }
@@ -269,7 +274,7 @@ export class App {
       _res,
       next,
     ) => {
-      req._container = this._createRequestContainer();
+      req._container = this.#createRequestContainer();
       next();
     };
 
@@ -303,7 +308,7 @@ export class App {
           | Newable<EmpackMiddleware> = (_req, _res, next) => {
           next();
         };
-        if (this._isAuthGuardEnabled) {
+        if (this.#isAuthGuardEnabled) {
           const methodGuard = Reflect.getMetadata(
             GUARD_KEY,
             ControllerClass.prototype,
@@ -311,7 +316,7 @@ export class App {
           );
           const classGuard = Reflect.getMetadata(GUARD_KEY, ControllerClass);
           const guard: GuardMiddleware =
-            methodGuard ?? classGuard ?? this._defaultGuard;
+            methodGuard ?? classGuard ?? this.#defaultGuard;
           if (!guard) {
             throw new Error(
               `AuthGuard is enabled, without default guard ${ControllerClass.name} or ${ControllerClass.name}.${route.handlerName} must define a @Guard decorator`,
@@ -355,7 +360,7 @@ export class App {
         .toLowerCase();
 
       this.logger.debug(`${ControllerClass.name} Mounted at ${fullMountPath}`);
-      this._app.use(fullMountPath, router);
+      this.#app.use(fullMountPath, router);
     });
 
     return this;
@@ -376,7 +381,7 @@ export class App {
     const options = new WsOptions();
     if (fn) fn(options);
 
-    const wss = new WebSocketServer({ server: this._server });
+    const wss = new WebSocketServer({ server: this.#server });
 
     const errorHandler = async (
       err: any,
@@ -418,7 +423,7 @@ export class App {
         if (!ctor)
           throw new Error(`${pathname} is not a valid websocket route`);
 
-        const instance = await this._createRequestContainer().getAsync(ctor);
+        const instance = await this.#createRequestContainer().getAsync(ctor);
         const { onMessage, onClose, onConnected } = instance;
         const ctx: WebSocketContext = {
           req,
@@ -459,16 +464,16 @@ export class App {
   }
 
   setExceptionHandler(handler: ExceptionHandler) {
-    this._exceptionHandler = handler;
+    this.#exceptionHandler = handler;
     return this;
   }
 
   setNotFoundHandler(handler: NotFoundHandler) {
-    this._notFoundHandler = handler;
+    this.#notFoundHandler = handler;
     return this;
   }
 
-  private _useExceptionMiddleware: EmpackExceptionMiddlewareFunction = async (
+  #useExceptionMiddleware: EmpackExceptionMiddlewareFunction = async (
     err,
     req,
     res,
@@ -478,8 +483,8 @@ export class App {
     this.logger.error(err);
     let result;
     let statusCode;
-    if (this._exceptionHandler) {
-      const handlerResult = this._exceptionHandler(err, req);
+    if (this.#exceptionHandler) {
+      const handlerResult = this.#exceptionHandler(err, req);
       if (handlerResult) {
         result = handlerResult.body;
         statusCode = handlerResult.statusCode;
@@ -488,12 +493,12 @@ export class App {
     res.status(statusCode ?? 500).json(result ?? "Internal Server Error");
   };
 
-  private _useNotFoundMiddleware = async (req: Request, res: Response) => {
+  #useNotFoundMiddleware = async (req: Request, res: Response) => {
     this.logger.warn(`Not found: ${req.method} ${req.originalUrl}`);
     let statusCode;
     let result;
-    if (this._notFoundHandler) {
-      const handlerResult = this._notFoundHandler(req);
+    if (this.#notFoundHandler) {
+      const handlerResult = this.#notFoundHandler(req);
       if (handlerResult) {
         result = handlerResult.body;
         statusCode = handlerResult.statusCode;
@@ -505,38 +510,38 @@ export class App {
   useMiddleware(
     middleware: EmpackMiddlewareFunction | EmpackExceptionMiddlewareFunction,
   ) {
-    this._app.use(middleware);
+    this.#app.use(middleware);
     return this;
   }
 
   enableAuthGuard(defaultGuard?: GuardMiddleware) {
-    this._isAuthGuardEnabled = true;
-    this._defaultGuard = defaultGuard;
+    this.#isAuthGuardEnabled = true;
+    this.#defaultGuard = defaultGuard;
     return this;
   }
 
   useJsonParser(options?: bodyParser.OptionsJson) {
-    this._app.use(express.json(options));
+    this.#app.use(express.json(options));
     return this;
   }
 
   useUrlEncodedParser(options?: bodyParser.OptionsUrlencoded) {
-    this._app.use(express.urlencoded(options));
+    this.#app.use(express.urlencoded(options));
     return this;
   }
 
   useCors(options: cors.CorsOptions) {
-    this._app.use(cors(options));
+    this.#app.use(cors(options));
     return this;
   }
 
   useStatic(path: string) {
-    this._app.use(express.static(path));
+    this.#app.use(express.static(path));
     return this;
   }
 
   addHeaders(headers: Record<string, string>) {
-    this._app.use((_req, res, next) => {
+    this.#app.use((_req, res, next) => {
       for (const [key, value] of Object.entries(headers)) {
         res.setHeader(key, value);
       }
@@ -546,36 +551,36 @@ export class App {
   }
 
   run(port: number = 3000) {
-    this.useMiddleware(this._useExceptionMiddleware);
-    this.useMiddleware(this._useNotFoundMiddleware);
+    this.useMiddleware(this.#useExceptionMiddleware);
+    this.useMiddleware(this.#useNotFoundMiddleware);
 
-    this._server.listen(port, () => {
+    this.#server.listen(port, () => {
       this.logger.info(`Listening on port ${port}`);
     });
 
-    this._server.on("connection", (conn) => {
-      this._connections.add(conn);
+    this.#server.on("connection", (conn) => {
+      this.#connections.add(conn);
       conn.on("close", () => {
-        this._connections.delete(conn);
+        this.#connections.delete(conn);
       });
     });
 
-    this._server.setTimeout(this.options.setTimeout);
+    this.#server.setTimeout(this.options.setTimeout);
 
-    process.on("SIGINT", this._gracefulShutdown.bind(this));
-    process.on("SIGTERM", this._gracefulShutdown.bind(this));
+    process.on("SIGINT", this.#gracefulShutdown.bind(this));
+    process.on("SIGTERM", this.#gracefulShutdown.bind(this));
   }
 
-  private _bindLogger() {
+  #bindLogger() {
     this.serviceContainer
       .rebindSync<ILogger>(ILoggerSymbol)
       .toConstantValue(this.logger);
   }
 
-  private _gracefulShutdown() {
+  #gracefulShutdown() {
     this.logger.info("Starting graceful shutdown...");
 
-    this._server?.close(() => {
+    this.#server?.close(() => {
       this.logger.info("Closed server, exiting process.");
       setTimeout(() => {
         process.exit(0);
@@ -584,7 +589,7 @@ export class App {
 
     setTimeout(() => {
       this.logger.info("Forcing close of connections...");
-      this._connections.forEach((conn) => conn.destroy());
+      this.#connections.forEach((conn) => conn.destroy());
     }, 30_000);
   }
 }

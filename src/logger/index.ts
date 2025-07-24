@@ -1,2 +1,2 @@
-export * from "./interfaces/index";
-export * from "./logger";
+export type { ILogger } from "./interfaces";
+export { Logger, LOGGER_LEVEL } from "./logger";

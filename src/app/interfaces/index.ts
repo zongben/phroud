@@ -1,14 +1,14 @@
-import { EmpackExceptionMiddlewareFunction, EmpackMiddlewareFunction } from "../types/index";
+import { NextFunction, Request, Response } from "express";
 
 export interface IEnv {
   get(key: string): string;
-  getOptional(key: string): string | undefined
+  getOptional(key: string): string | undefined;
 }
 
-export interface EmpackMiddleware {
-  use: EmpackMiddlewareFunction;
+export interface IEmpackMiddleware {
+  use(req: Request, res: Response, next: NextFunction): any;
 }
 
-export interface EmpackExceptionMiddleware {
-  use: EmpackExceptionMiddlewareFunction;
+export interface IEmpackExceptionMiddleware {
+  use(err: Error, req: Request, res: Response, next: NextFunction): any;
 }

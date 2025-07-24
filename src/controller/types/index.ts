@@ -1,7 +1,9 @@
 import { CookieOptions } from "express";
 import { IncomingMessage } from "http";
-import { EmpackMiddleware } from "../../app/interfaces/index";
-import { EmpackMiddlewareFunction } from "../../app/types/index";
+import {
+  EmpackMiddleware,
+  EmpackMiddlewareFunction,
+} from "../../app/types/index";
 import { Newable } from "inversify";
 
 export type GuardMiddleware =

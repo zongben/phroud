@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import { performance } from "node:perf_hooks";
 import { AsyncLocalStorage } from "node:async_hooks";
-import { TimerHanlder, TimeSpan } from "./types/index";
 import onFinished from "on-finished";
 import { ILogger } from "../logger";
 import { EmpackMiddlewareFunction } from "../app";
+import { TimerHanlder, TimeSpan } from ".";
 
-export const timerStorage = new AsyncLocalStorage<Timer>();
+const timerStorage = new AsyncLocalStorage<Timer>();
 
 export class Timer {
   private _timeSpans: TimeSpan[] = [];

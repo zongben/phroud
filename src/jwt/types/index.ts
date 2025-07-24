@@ -1,5 +1,5 @@
-import type { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
+import { NextFunction, Response, Request } from "express";
+import { JwtPayload, SignOptions } from "jsonwebtoken";
 
 export type JwtHandlerResult = {
   status: number;
@@ -10,7 +10,7 @@ export type JwtHandler = {
   onUnauthorized?: (req: Request, res: Response) => JwtHandlerResult;
   onExpired?: (req: Request, res: Response) => JwtHandlerResult;
   onSuccess?: (
-    payload: string | jwt.JwtPayload,
+    payload: string | JwtPayload,
     req: Request,
     res: Response,
     next: NextFunction,
@@ -19,5 +19,5 @@ export type JwtHandler = {
 
 export type JwTokenSettings = {
   secret: string;
-  options?: jwt.SignOptions;
+  options?: SignOptions;
 };

@@ -1,7 +1,7 @@
-import { inject } from "../../../../../../src/di";
-import { HandleFor } from "../../../../../../src/mediator";
-import { ErrorReturn, OkReturn, OneOf } from "../../../../../../src/result";
-import { Track, uuid } from "../../../../../../src/utils";
+import { inject, IReqHandler } from "../../../../../../src";
+import { HandleFor } from "../../../../../../src";
+import { ErrorReturn, OkReturn, OneOf } from "../../../../../../src";
+import { Track, uuid } from "../../../../../../src";
 import { UserRepository } from "../../../../infra/repository/user.repository";
 import { ErrorCodes } from "../../../error-codes";
 import { IUserRepository } from "../../../persistence/user.repository";
@@ -12,7 +12,6 @@ import {
   ScopeTestSymbol,
   UserRoot,
 } from "../../../../domain/user/user.root";
-import { IReqHandler } from "../../../../../../src/mediator/mediator";
 
 @Track()
 @HandleFor(RegisterCommand)

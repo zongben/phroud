@@ -10,33 +10,28 @@ import bodyParser from "body-parser";
 import {
   IPublisherSymbol,
   ISenderSymbol,
-  Mediator,
   MediatorPipe,
 } from "../mediator/index";
 import {
   EmpackExceptionMiddlewareFunction,
+  EmpackMiddleware,
   EmpackMiddlewareFunction,
   ExceptionHandler,
   NotFoundHandler,
   WsAuthResult,
 } from "./types/index";
-import {
-  CONTROLLER_METADATA,
-  GUARD_KEY,
-  GuardMiddleware,
-  ROUTE_METADATA_KEY,
-  RouteDefinition,
-  WebSocketContext,
-  WSCONTROLLER_METADATA,
-} from "../controller/index";
 import { IEnvSymbol, ILoggerSymbol } from "./symbols/index";
 import { Module } from "../di/index";
 import { EventMap, MediatorMap } from "../mediator/types/index";
 import { IWebSocket } from "../controller/interfaces/index";
-import { EmpackMiddleware, IEnv } from "./interfaces/index";
+import { IEnv } from "./interfaces/index";
 import { ILogger } from "../logger/index";
-import { MEDIATOR_KEY } from "../mediator/mediator";
 import { match } from "path-to-regexp";
+import { GuardMiddleware } from "../controller";
+import { RouteDefinition, WebSocketContext } from "../controller/types";
+import { Mediator } from "../mediator/mediator";
+import { MEDIATOR_KEY } from "../mediator/decorator";
+import { CONTROLLER_METADATA, GUARD_KEY, ROUTE_METADATA_KEY, WSCONTROLLER_METADATA } from "../controller/decorator";
 
 function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
   handler: T,

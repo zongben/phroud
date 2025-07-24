@@ -1,5 +1,5 @@
 import { Track } from "../../../../src";
-import { injectable } from "../../../../src/di";
+import { injectable } from "../../../../src";
 import { IUserRepository } from "../../application/persistence/user.repository";
 import { UserRoot } from "../../domain/user/user.root";
 

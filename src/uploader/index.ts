@@ -1,4 +1,4 @@
 import uploader from "multer";
 
 export { uploader };
-export * from "./uploader";
+export { createMulter } from "./uploader";

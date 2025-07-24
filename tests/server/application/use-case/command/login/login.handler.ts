@@ -1,9 +1,8 @@
-import { Track } from "../../../../../../src";
-import { inject } from "../../../../../../src/di";
-import { IJwTokenHelper } from "../../../../../../src/jwt";
-import { HandleFor, IPublisher, IPublisherSymbol } from "../../../../../../src/mediator";
-import { IReqHandler } from "../../../../../../src/mediator/mediator";
-import { ErrorReturn, OkReturn, OneOf } from "../../../../../../src/result";
+import { IReqHandler, Track } from "../../../../../../src";
+import { inject } from "../../../../../../src";
+import { IJwTokenHelper } from "../../../../../../src";
+import { HandleFor, IPublisher, IPublisherSymbol } from "../../../../../../src";
+import { ErrorReturn, OkReturn, OneOf } from "../../../../../../src";
 import { AccessTokenSymbol, RefreshTokenSymbol } from "../../../../infra/jwt";
 import { UserRepository } from "../../../../infra/repository/user.repository";
 import { ErrorCodes } from "../../../error-codes";

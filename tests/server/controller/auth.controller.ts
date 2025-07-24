@@ -7,9 +7,9 @@ import {
   FromFile,
   Guard,
 } from "../../../src/controller";
-import { MediatedController } from "../../../src/mediator";
-import { matchResult } from "../../../src/result";
-import { validate } from "../../../src/validator";
+import { MediatedController } from "../../../src";
+import { matchResult } from "../../../src";
+import { validate } from "../../../src";
 import { LoginCommand } from "../application/use-case/command/login/login.command";
 import { LoginReq, LoginRule } from "../contract/auth/login";
 import { ErrorBody } from "./error-body";
@@ -18,7 +18,7 @@ import { RegisterReq, RegisterRule } from "../contract/auth/register";
 import { RegisterCommand } from "../application/use-case/command/register/register.command";
 import { inject } from "inversify";
 import { ScopeTest, ScopeTestSymbol } from "../domain/user/user.root";
-import { createMulter, uploader } from "../../../src/uploader";
+import { createMulter, uploader } from "../../../src";
 import { AsyncTestMiddleware } from "../middleware";
 import { Track } from "../../../src";
 

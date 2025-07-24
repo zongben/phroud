@@ -1,4 +1,3 @@
 export { inject, injectable, injectFromBase, Newable } from "inversify";
-export * from "./types/index";
-export * from "./interfaces/index";
-export * from "./module";
+export type { BindingScope } from "./types";
+export { Module } from "./module";

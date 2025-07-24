@@ -1,8 +1,8 @@
-import { WsController, WebSocketContext } from "../../../src/controller";
+import { WsController, WebSocketContext } from "../../../src";
 import { IWebSocket } from "../../../src/controller/interfaces";
-import { ILoggerSymbol, RawData } from "../../../src/app";
-import { ILogger } from "../../../src/logger";
-import { inject } from "../../../src/di";
+import { ILoggerSymbol, RawData } from "../../../src";
+import { ILogger } from "../../../src";
+import { inject } from "../../../src";
 
 @WsController("/chat/room/:id")
 export class ChatWebSocket implements IWebSocket {

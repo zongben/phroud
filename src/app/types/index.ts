@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { IEmpackExceptionMiddleware, IEmpackMiddleware } from "../interfaces";
 
 export type HandlerResult = {
   statusCode?: number;
@@ -26,3 +27,7 @@ export type ExceptionHandler = (
 export type NotFoundHandler = (req: Request) => HandlerResult | void;
 
 export type WsAuthResult = true | { code: number; reason: string | Buffer };
+
+export type EmpackMiddleware = IEmpackMiddleware;
+
+export type EmpackExceptionMiddleware = IEmpackExceptionMiddleware;

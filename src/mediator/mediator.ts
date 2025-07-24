@@ -1,20 +1,7 @@
 import { Container, inject, injectable, Newable } from "inversify";
 import { EventMap, MediatorMap } from "./types/index";
-import { IPublisher } from "./interfaces/index";
 import { ISenderSymbol } from "./symbols";
-
-export interface ISender {
-  send<
-    TReq extends MediatedRequest<TRes>,
-    TRes = TReq extends MediatedRequest<infer R> ? R : never,
-  >(
-    req: TReq,
-  ): Promise<TRes>;
-}
-
-export interface IReqHandler<T extends MediatedRequest<TResult>, TResult> {
-  handle(req: T): Promise<TResult>;
-}
+import type { IPublisher, IReqHandler, ISender } from "./interfaces";
 
 export abstract class MediatedController {
   @inject(ISenderSymbol) private readonly _sender!: ISender;
@@ -26,11 +13,6 @@ export abstract class MediatedController {
     return await this._sender.send(req);
   }
 }
-
-export const MEDIATOR_KEY = {
-  handlerFor: Symbol.for("empack:handleFor"),
-  subscribe: Symbol.for("empack:subscribeTo"),
-};
 
 @injectable()
 export abstract class MediatorPipe {

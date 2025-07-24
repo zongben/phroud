@@ -1,10 +1,10 @@
-import { inject } from "inversify";
+import { inject } from "../../../src";
 import {
   EmpackMiddleware,
   EmpackMiddlewareFunction,
   ILoggerSymbol,
-} from "../../../src/app";
-import { ILogger } from "../../../src/logger";
+} from "../../../src";
+import { ILogger } from "../../../src";
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -23,4 +23,4 @@ export class AsyncTestMiddleware implements EmpackMiddleware {
 
 export const rateLimiter: EmpackMiddlewareFunction = (_req, _res, next) => {
   return next(new Error("Too many requests"));
-}
+};

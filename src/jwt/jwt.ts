@@ -1,7 +1,7 @@
-import type { NextFunction, Request, Response } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import { IJwTokenHelper } from "./interfaces/index";
-import { JwtHandler, JwtHandlerResult, JwTokenSettings } from "./types/index";
+import { NextFunction, Request, Response } from "express";
+import { JwtHandler, JwtHandlerResult, JwTokenSettings } from "./types";
+import { JwtPayload, sign, verify } from "jsonwebtoken";
+import { IJwTokenHelper } from "./interfaces";
 
 export function jwtGuard(secret: string, handler?: JwtHandler) {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -25,7 +25,7 @@ export function jwtGuard(secret: string, handler?: JwtHandler) {
     }
     token = token.slice(7, token.length);
     try {
-      const payload = jwt.verify(token, secret);
+      const payload = verify(token, secret);
       res.locals.jwt = payload;
       if (handler?.onSuccess) {
         handler.onSuccess(payload, req, res, next);
@@ -48,12 +48,12 @@ export class JwTokenHelper implements IJwTokenHelper {
   constructor(private settings: JwTokenSettings) {}
 
   generateToken(payload: any): string {
-    return jwt.sign(payload, this.settings.secret, this.settings.options);
+    return sign(payload, this.settings.secret, this.settings.options);
   }
 
   verifyToken(token: string): JwtPayload | null {
     try {
-      const payload = jwt.verify(token, this.settings.secret);
+      const payload = verify(token, this.settings.secret);
       return typeof payload === "string" ? null : payload;
     } catch {
       return null;

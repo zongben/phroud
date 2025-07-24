@@ -1,5 +1,5 @@
-import { OneOf } from "../../../../../../src/result";
-import { MediatedRequest } from "../../../../../../src/mediator";
+import { OneOf } from "../../../../../../src";
+import { MediatedRequest } from "../../../../../../src";
 import { RegisterError, RegisterResult } from "./register.result";
 
 export class RegisterCommand extends MediatedRequest<

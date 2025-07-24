@@ -1,2 +1,2 @@
-export * from "./result";
-export * from "./types/index";
+export type { OkResult, ErrorResult, OneOf } from "./types";
+export { ErrorReturn, OkReturn, matchResult } from "./result";

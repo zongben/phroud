@@ -1,16 +1,15 @@
-import { BindingFluentAPI } from "./interfaces/index";
-import { ContainerModule } from "./types/index";
+import { BindingScope, ContainerModule } from "./types";
 
 export abstract class Module {
   private binder: ContainerModule[] = [];
 
-  abstract register(bind: BindingFluentAPI): void;
+  abstract register(bind: BindingScope): void;
 
   getBindings(): ContainerModule[] {
     return this.binder;
   }
 
-  private createBinder(): BindingFluentAPI {
+  private createBinder(): BindingScope {
     return {
       addSingletonScope: (type, ctor) =>
         this.binder.push({ scope: "singleton", type, constructor: ctor }),

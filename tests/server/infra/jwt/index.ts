@@ -1,5 +1,5 @@
-import { BindingFluentAPI, Module } from "../../../../src/di";
-import { JwTokenHelper, JwTokenSettings } from "../../../../src/jwt";
+import { BindingScope, Module } from "../../../../src";
+import { JwTokenHelper, JwTokenSettings } from "../../../../src";
 
 export const AccessTokenSymbol = Symbol.for("ACCESSTOKEN");
 export const RefreshTokenSymbol = Symbol.for("REFRESHTOKEN");
@@ -11,7 +11,7 @@ export class JwtModule extends Module {
   ) {
     super();
   }
-  register(bind: BindingFluentAPI): void {
+  register(bind: BindingScope): void {
     bind.addConstant(
       AccessTokenSymbol,
       new JwTokenHelper(this.accessTokenSetting),

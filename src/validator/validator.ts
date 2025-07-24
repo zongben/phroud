@@ -1,15 +1,6 @@
-import {
-  ValidationChain,
-  ValidationError,
-  validationResult,
-} from "express-validator";
 import { NextFunction, Request, Response } from "express";
-import { EmpackMiddlewareFunction } from "../app/types/index";
-
-export type ValidationFailResponse<T> = {
-  status: number;
-  data: T;
-};
+import { ValidationChain, ValidationError, ValidationFailResponse, validationResult } from ".";
+import { EmpackMiddlewareFunction } from "..";
 
 export function createRule<T>(
   handler: (key: <K extends keyof T>(k: K) => K) => ValidationChain[],

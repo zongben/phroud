@@ -31,3 +31,8 @@ export type WsAuthResult = true | { code: number; reason: string | Buffer };
 export type EmpackMiddleware = IEmpackMiddleware;
 
 export type EmpackExceptionMiddleware = IEmpackExceptionMiddleware;
+
+export type OpenApiOptions = {
+  title: string;
+  version: string;
+};

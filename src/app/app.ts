@@ -18,6 +18,7 @@ import {
   EmpackMiddlewareFunction,
   ExceptionHandler,
   NotFoundHandler,
+  OpenApiOptions,
   WsAuthResult,
 } from "./types/index";
 import { IEnvSymbol, ILoggerSymbol } from "./symbols/index";
@@ -35,8 +36,15 @@ import {
   CONTROLLER_METADATA,
   GUARD_KEY,
   ROUTE_METADATA_KEY,
+  ROUTE_METHOD,
+  ROUTE_PATH,
   WSCONTROLLER_METADATA,
 } from "../controller/decorator";
+import { ApiDocOptions } from "../openapi";
+import { APIDOC_KEY } from "../openapi/decorator";
+import { ApiDocMetaData } from "../openapi/types";
+import { generateOpenApiSpec } from "../openapi/openapi";
+import swaggerUI from "swagger-ui-express";
 
 function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
   handler: T,
@@ -51,17 +59,25 @@ function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
   };
 }
 
+function isPlainFunction(middleware: any): boolean {
+  return (
+    typeof middleware === "function" &&
+    (!middleware.prototype || // arrow function or bound
+      Object.getOwnPropertyNames(middleware.prototype).length === 1) // 只有 constructor
+  );
+}
+
 async function resolveMiddleware(
   container: Container,
   middleware: Newable<EmpackMiddleware> | EmpackMiddlewareFunction,
 ): Promise<EmpackMiddlewareFunction> {
-  if (middleware.prototype) {
-    const instance = await container.getAsync(
-      middleware as Newable<EmpackMiddleware>,
-    );
-    return instance.use.bind(instance);
+  if (isPlainFunction(middleware)) {
+    return middleware as EmpackMiddlewareFunction;
   }
-  return middleware as EmpackMiddlewareFunction;
+  const instance = await container.getAsync(
+    middleware as Newable<EmpackMiddleware>,
+  );
+  return instance.use.bind(instance);
 }
 
 class Env implements IEnv {
@@ -133,6 +149,11 @@ export class App {
   };
   #isAuthGuardEnabled: boolean;
   #defaultGuard?: GuardMiddleware;
+  #controllers?: Newable[];
+  #swagger?: {
+    metaData: () => ApiDocMetaData[];
+    options: OpenApiOptions;
+  };
   logger: ILogger;
   env!: IEnv;
   serviceContainer: Container;
@@ -268,7 +289,62 @@ export class App {
     return this;
   }
 
+  enableSwagger(options: OpenApiOptions) {
+    const metaData = () => {
+      const apiDocs: ApiDocMetaData[] = [];
+
+      this.#controllers?.forEach((c) => {
+        const c_prototype = c.prototype;
+        const c_path = Reflect.getMetadata(CONTROLLER_METADATA.PATH, c);
+
+        Object.getOwnPropertyNames(c_prototype).forEach((handlerName) => {
+          if (handlerName === "constructor") return;
+
+          const handler = c_prototype[handlerName];
+          if (typeof handler !== "function") return;
+
+          const routeMethod: RouteDefinition["method"] = Reflect.getMetadata(
+            ROUTE_METHOD,
+            c_prototype,
+            handlerName,
+          );
+          const routePath = Reflect.getMetadata(
+            ROUTE_PATH,
+            c_prototype,
+            handlerName,
+          );
+
+          if (!routeMethod || !routePath) return;
+
+          const apiDoc: ApiDocOptions =
+            Reflect.getMetadata(APIDOC_KEY, c_prototype, handlerName) || {};
+
+          apiDocs.push({
+            controllerName: c.name,
+            handlerName,
+            methodName: routeMethod,
+            path:
+              `${this.options.routerPrefix}/${c_path}/${routePath}`
+                .replace(/\/+/g, "/")
+                .replace(/\/$/, "") || "/",
+            apiDoc,
+          });
+        });
+      });
+
+      return apiDocs;
+    };
+
+    this.#swagger = {
+      metaData,
+      options,
+    };
+    return this;
+  }
+
   mapController(controllers: Newable<any>[]) {
+    this.#controllers = controllers;
+
     const createRequestScopeContainer: EmpackMiddlewareFunction = (
       req: any,
       _res,
@@ -551,11 +627,26 @@ export class App {
   }
 
   run(port: number = 3000) {
+    if (this.#swagger) {
+      const { title, version } = this.#swagger.options;
+      const spec = generateOpenApiSpec(
+        title,
+        version,
+        this.#swagger.metaData(),
+      );
+      this.#app.use("/docs", swaggerUI.serve, swaggerUI.setup(spec));
+    }
+
     this.useMiddleware(this.#useExceptionMiddleware);
     this.useMiddleware(this.#useNotFoundMiddleware);
 
     this.#server.listen(port, () => {
       this.logger.info(`Listening on port ${port}`);
+      if (this.#swagger) {
+        this.logger.info(
+          `Swagger UI available at http://localhost:${port}/docs`,
+        );
+      }
     });
 
     this.#server.on("connection", (conn) => {

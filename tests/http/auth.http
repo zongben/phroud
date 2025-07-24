@@ -23,6 +23,11 @@ Content-Type: application/json
 
 ###
 
+GET {{host}}/5?token=123
+Content-Type:application/json
+
+###
+
 GET {{host}}/notfound
 Content-Type: application/json
 

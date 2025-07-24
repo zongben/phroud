@@ -2,10 +2,18 @@ import { NextFunction, Request, Response } from "express";
 import { ParamMetadata, ResponseWith, RouteDefinition } from "../types";
 import { Newable } from "inversify";
 import { EmpackMiddleware, EmpackMiddlewareFunction } from "../../app";
-import { BufferResponse, FileResponse, JsonResponse, RedirectResponse, ResWith } from "../responses";
+import {
+  BufferResponse,
+  FileResponse,
+  JsonResponse,
+  RedirectResponse,
+  ResWith,
+} from "../responses";
 import { PARAM_METADATA_KEY } from "./param";
 
 export const ROUTE_METADATA_KEY = Symbol("empack:route_metadata");
+export const ROUTE_METHOD = Symbol("empack:route_method");
+export const ROUTE_PATH = Symbol("empack:route_path");
 
 export const Get = createRouteDecorator("get");
 export const Post = createRouteDecorator("post");
@@ -78,6 +86,18 @@ function createRouteDecorator(method: RouteDefinition["method"]) {
               case "file":
                 rawValue = req.file;
                 break;
+              case "multiFile":
+                rawValue = {
+                  ...req.body,
+                  file: req.file,
+                };
+                break;
+              case "multiFiles":
+                rawValue = {
+                  ...req.body,
+                  files: req.files,
+                };
+                break;
               default:
                 rawValue = undefined;
             }
@@ -112,6 +132,9 @@ function createRouteDecorator(method: RouteDefinition["method"]) {
           next(err);
         }
       };
+
+      Reflect.defineMetadata(ROUTE_METHOD, method, target, propertyKey);
+      Reflect.defineMetadata(ROUTE_PATH, path, target, propertyKey);
 
       const routes: RouteDefinition[] =
         Reflect.getMetadata(ROUTE_METADATA_KEY, target.constructor) || [];

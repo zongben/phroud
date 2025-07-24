@@ -42,8 +42,10 @@ export type ParamSource =
   | "locals"
   | "req"
   | "res"
+  | "file"
   | "files"
-  | "file";
+  | "multiFile"
+  | "multiFiles";
 
 export type WebSocketContext = {
   req: IncomingMessage;

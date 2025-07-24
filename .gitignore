@@ -1,4 +1,4 @@
 node_modules
 log
-upload_test/**
+**/upload_test/**
 dist

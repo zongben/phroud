@@ -4,10 +4,11 @@ import {
   Get,
   Post,
   Responses,
-  FromFile,
   Guard,
+  FromQuery,
+  FromParam,
 } from "../../../src/controller";
-import { MediatedController } from "../../../src";
+import { ApiDoc, MediatedController } from "../../../src";
 import { matchResult } from "../../../src";
 import { validate } from "../../../src";
 import { LoginCommand } from "../application/use-case/command/login/login.command";
@@ -21,6 +22,12 @@ import { ScopeTest, ScopeTestSymbol } from "../domain/user/user.root";
 import { createMulter, uploader } from "../../../src";
 import { AsyncTestMiddleware } from "../middleware";
 import { Track } from "../../../src";
+import { RegisterResult } from "../application/use-case/command/register/register.result";
+import { UploadFile } from "../contract/auth/file";
+import {
+  FromMultiFile,
+  FromMultiFiles,
+} from "../../../src/controller/decorator";
 
 const storage: uploader.DiskStorageOptions = {
   destination: `${process.cwd()}/tests/upload_test/`,
@@ -36,6 +43,15 @@ export class AuthController extends MediatedController {
     super();
   }
 
+  @ApiDoc({
+    summary: "會員註冊",
+    description: "會員註冊詳細說明",
+    tags: ["Auth"],
+    requestBody: [RegisterReq],
+    responses: {
+      201: RegisterResult,
+    },
+  })
   @Post("/register", validate(RegisterRule))
   async register(@FromBody() req: RegisterReq) {
     console.log("from controller: ", this._scopeTest.index);
@@ -91,6 +107,29 @@ export class AuthController extends MediatedController {
     });
   }
 
+  @ApiDoc({
+    tags: ["Auth"],
+    params: [
+      {
+        name: "id",
+        description: "使用者id",
+      },
+    ],
+    query: [
+      {
+        name: "token",
+        description: "token認證",
+      },
+    ],
+  })
+  @Get("/room/:id")
+  async getId(@FromQuery("token") token: any, @FromParam("id") id: any) {
+    return Responses.OK({
+      id,
+      token,
+    });
+  }
+
   @Get("/empty", AsyncTestMiddleware, (_req, _res, next) => {
     console.log("sync function");
     next();
@@ -102,13 +141,24 @@ export class AuthController extends MediatedController {
     throw new Error("error test");
   }
 
+  @ApiDoc({
+    tags: ["Auth"],
+    responses: {
+      200: "binary",
+    },
+  })
   @Get("/file")
   async getFile() {
     return Responses.File("test.txt", `tests/assets/test.txt`);
   }
 
-  @Post("/file", multer.single("file"))
-  async postFile(@FromFile() file: Express.Multer.File) {
-    return Responses.OK(file.filename);
+  @ApiDoc({
+    tags: ["Auth"],
+    contentType: "multipart/form-data",
+    requestBody: UploadFile,
+  })
+  @Post("/file", multer.array("files"))
+  async postFile(@FromMultiFiles() multi: UploadFile) {
+    return Responses.OK({ title: multi.title });
   }
 }

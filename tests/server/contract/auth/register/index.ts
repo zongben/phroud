@@ -1,12 +1,47 @@
 import { body, createRule } from "../../../../../src";
+import {
+  ApiArrayProperty,
+  ApiProperty,
+} from "../../../../../src/openapi/decorator";
 import { ErrorBody } from "../../../controller/error-body";
 import { INVALID_CODES } from "../../invalid-codes";
 
-export type RegisterReq = {
-  account: string;
-  password: string;
-  username: string;
-};
+export class Address {
+  @ApiProperty({
+    description: "國家",
+  })
+  country!: string;
+
+  @ApiProperty({
+    description: "地區",
+  })
+  district!: string;
+}
+
+export class RegisterReq {
+  @ApiProperty({
+    description: "帳號",
+    required: true,
+  })
+  account!: string;
+
+  @ApiProperty({
+    description: "密碼",
+    required: true,
+  })
+  password!: string;
+
+  @ApiProperty({
+    description: "使用者名稱",
+    required: true,
+  })
+  username!: string;
+
+  @ApiArrayProperty({
+    type: Address,
+  })
+  address!: Address[];
+}
 
 export const RegisterRule = createRule<RegisterReq>((key) => {
   return [

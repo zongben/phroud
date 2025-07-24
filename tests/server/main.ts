@@ -18,6 +18,10 @@ app.setLogger(
     app.env.get("NODE_ENV") === "dev" ? LOGGER_LEVEL.DEBUG : LOGGER_LEVEL.INFO,
   ),
 );
+app.enableSwagger({
+  title: "Empack",
+  version: "1.0.0",
+});
 app.enableAuthGuard(jwtGuard(app.env.get("JWT_SECRET")));
 app.setMediator(handlers);
 app.addRequestScope(ScopeTestSymbol, ScopeTest);

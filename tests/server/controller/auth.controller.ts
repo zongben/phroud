@@ -9,7 +9,6 @@ import {
 } from "../../../src/controller";
 import { MediatedController } from "../../../src/mediator";
 import { matchResult } from "../../../src/result";
-import { TrackClassMethods } from "../../../src/utils";
 import { validate } from "../../../src/validator";
 import { LoginCommand } from "../application/use-case/command/login/login.command";
 import { LoginReq, LoginRule } from "../contract/auth/login";
@@ -21,6 +20,7 @@ import { inject } from "inversify";
 import { ScopeTest, ScopeTestSymbol } from "../domain/user/user.root";
 import { createMulter, uploader } from "../../../src/uploader";
 import { AsyncTestMiddleware } from "../middleware";
+import { Track } from "../../../src";
 
 const storage: uploader.DiskStorageOptions = {
   destination: `${process.cwd()}/tests/upload_test/`,
@@ -28,9 +28,9 @@ const storage: uploader.DiskStorageOptions = {
 
 const multer = createMulter(storage);
 
-@TrackClassMethods()
-@Controller("/auth")
+@Track()
 @Guard("none")
+@Controller("/auth")
 export class AuthController extends MediatedController {
   constructor(@inject(ScopeTestSymbol) private readonly _scopeTest: ScopeTest) {
     super();

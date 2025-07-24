@@ -1,3 +1,5 @@
+import { Request, Response } from "express";
+
 export type TimeSpan = {
   id: number;
   label: string;
@@ -6,3 +8,10 @@ export type TimeSpan = {
   duration?: number;
   depth?: number;
 };
+
+export type TimerHanlder = (
+  duration: number,
+  timeSpan: TimeSpan[],
+  req: Request,
+  res: Response,
+) => void;

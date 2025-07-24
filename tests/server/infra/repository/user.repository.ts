@@ -1,12 +1,12 @@
+import { Track } from "../../../../src";
 import { injectable } from "../../../../src/di";
-import { TrackClassMethods } from "../../../../src/utils";
 import { IUserRepository } from "../../application/persistence/user.repository";
 import { UserRoot } from "../../domain/user/user.root";
 
 const memory_db: UserRoot[] = [];
 
+@Track()
 @injectable()
-@TrackClassMethods()
 export class UserRepository implements IUserRepository {
   async create(user: UserRoot): Promise<UserRoot> {
     memory_db.push(user);

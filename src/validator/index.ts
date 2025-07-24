@@ -1,2 +1,2 @@
 export * from "express-validator";
-export * from "./validator";
+export { validate, ValidationFailResponse, createRule } from "./validator";

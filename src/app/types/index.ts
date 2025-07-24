@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import { TimeSpan } from "../../utils/types/index";
 
 export type HandlerResult = {
   statusCode?: number;
@@ -25,12 +24,5 @@ export type ExceptionHandler = (
 ) => HandlerResult | void;
 
 export type NotFoundHandler = (req: Request) => HandlerResult | void;
-
-export type TimerHanlder = (
-  duration: number,
-  timeSpan: TimeSpan[],
-  req: Request,
-  res: Response,
-) => void;
 
 export type WsAuthResult = true | { code: number; reason: string | Buffer };

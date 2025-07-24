@@ -1,58 +1,49 @@
 import { Timer } from "./timer";
 
-export function TrackClassMethods(): ClassDecorator {
-  return (target: any) => {
-    const methodNames = Object.getOwnPropertyNames(target.prototype).filter(
-      (name) =>
-        name !== "constructor" && typeof target.prototype[name] === "function",
-    );
-
-    for (const name of methodNames) {
-      const original = target.prototype[name];
-
-      target.prototype[name] = function (...args: any[]) {
-        const timer = Timer.current();
-        const label = `${target.name}.${name}`;
-        const id = timer?.start(label) ?? -1;
-
-        try {
-          const result = original.apply(this, args);
-          return result instanceof Promise
-            ? result.finally(() => timer?.end(id))
-            : (timer?.end(id), result);
-        } catch (err) {
-          timer?.end(id);
-          throw err;
-        }
-      };
-    }
-  };
-}
-
-export function TrackMethod(): MethodDecorator {
-  return (target, propertyKey, descriptor: PropertyDescriptor) => {
-    const original = descriptor.value;
-
-    descriptor.value = function (...args: any[]) {
-      const isStatic = typeof target === "function";
-      const className = isStatic
-        ? target.name
-        : (target.constructor?.name ?? "Function");
-      const timer = Timer.current();
-      const label = `${className}.${String(propertyKey)}`;
-      const id = timer?.start(label) ?? -1;
-
+export function Track(timer?: Timer): ClassDecorator & MethodDecorator {
+  return (
+    target: any,
+    propertyKey?: string | symbol,
+    descriptor?: PropertyDescriptor,
+  ): any => {
+    const time = (label: string, fn: () => any) => {
+      const t = timer ?? Timer.current();
+      const id = t?.start(label) ?? -1;
       try {
-        const result = original.apply(this, args);
+        const result = fn();
         return result instanceof Promise
-          ? result.finally(() => timer?.end(id))
-          : (timer?.end(id), result);
+          ? result.finally(() => t?.end(id))
+          : (t?.end(id), result);
       } catch (err) {
-        timer?.end(id);
+        t?.end(id);
         throw err;
       }
     };
 
-    return descriptor;
+    if (propertyKey && descriptor) {
+      // Method decorator
+      const original = descriptor.value;
+      descriptor.value = function (...args: any[]) {
+        const isStatic = typeof target === "function";
+        const className = isStatic
+          ? target.name
+          : (target.constructor?.name ?? "Function");
+        const label = `${className}.${String(propertyKey)}`;
+        return time(label, () => original.apply(this, args));
+      };
+      return descriptor;
+    }
+
+    // Class decorator
+    for (const name of Object.getOwnPropertyNames(target.prototype)) {
+      if (name === "constructor") continue;
+      const original = target.prototype[name];
+      if (typeof original === "function") {
+        target.prototype[name] = function (...args: any[]) {
+          const label = `${target.name}.${name}`;
+          return time(label, () => original.apply(this, args));
+        };
+      }
+    }
   };
 }

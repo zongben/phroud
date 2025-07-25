@@ -79,41 +79,38 @@ export function generateOpenApiSpec(
     let schemaName: string;
     let schema: any;
     if (apiDoc.params) {
-      if (apiDoc.params === "fromParams") {
-        const params = (apiDoc as any).__inferredParams;
-        resolveParams(operation, "path", params);
-      } else {
-        resolveParams(operation, "path", apiDoc.params);
-      }
+      const params =
+        apiDoc.params === "fromParams"
+          ? (apiDoc as any).__inferredParams
+          : apiDoc.params;
+      resolveParams(operation, "path", params);
     }
 
     if (apiDoc.query) {
-      if (apiDoc.query === "fromQuery") {
-        const query = (apiDoc as any).__inferredQuery;
-        resolveParams(operation, "query", query);
-      } else {
-        resolveParams(operation, "query", apiDoc.query);
-      }
+      const query =
+        apiDoc.query === "fromQuery"
+          ? (apiDoc as any).__inferredQuery
+          : apiDoc.query;
+      resolveParams(operation, "query", query);
     }
 
     if (apiDoc.requestBody) {
       const contentType = apiDoc.contentType ?? "application/json";
+      const reqBody =
+        apiDoc.requestBody === "fromBody"
+          ? (apiDoc as any).__inferredRequestBody
+          : apiDoc.requestBody;
 
-      if (Array.isArray(apiDoc.requestBody)) {
-        schemaName = apiDoc.requestBody[0].name;
-        collectSchemas(apiDoc.requestBody, componentsSchemas);
+      collectSchemas(reqBody, componentsSchemas);
+
+      if (Array.isArray(reqBody)) {
+        schemaName = reqBody[0].name;
         schema = {
           type: "array",
           items: { $ref: `#/components/schemas/${schemaName}` },
         };
-      } else if (apiDoc.requestBody === "fromBody") {
-        const type = (apiDoc as any).__inferredRequestBody;
-        schemaName = type.name;
-        collectSchemas(type, componentsSchemas);
-        schema = { $ref: `#/components/schemas/${schemaName}` };
       } else {
-        schemaName = apiDoc.requestBody.name;
-        collectSchemas(apiDoc.requestBody, componentsSchemas);
+        schemaName = reqBody.name;
         schema = { $ref: `#/components/schemas/${schemaName}` };
       }
 
@@ -129,14 +126,13 @@ export function generateOpenApiSpec(
       operation.responses = {};
 
       let responseContentType = "application/json";
-      for (const [statusCodeStr, resContent] of Object.entries(
+      for (const [statusCodeStr, { content, description }] of Object.entries(
         apiDoc.responses,
       )) {
         const statusCode = Number(statusCodeStr);
         let responseSchema: any;
         let schemaName: string;
 
-        const { content, description } = resContent;
         if (Array.isArray(content)) {
           const cls = content[0];
           schemaName = cls.name;

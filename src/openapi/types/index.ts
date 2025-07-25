@@ -2,7 +2,7 @@ import { Newable } from "inversify";
 
 type ResContent = {
   description?: string;
-  content: Newable | Newable[] | "binary";
+  content: Newable | [Newable] | "binary";
 };
 
 export type ParamsContent = {
@@ -22,7 +22,7 @@ export type ApiDocOptions = {
   contentType?: "application/json" | "multipart/form-data";
   params?: ParamsContent[] | Newable | "fromParams";
   query?: ParamsContent[] | Newable | "fromQuery";
-  requestBody?: Newable | Newable[] | "fromBody";
+  requestBody?: Newable | [Newable] | "fromBody";
   responses?: Record<number, ResContent>;
 };
 

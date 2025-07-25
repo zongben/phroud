@@ -5,30 +5,23 @@ type ResContent = {
   content: Newable | Newable[] | "binary";
 };
 
+type ParamsContent = {
+  name: string;
+  description?: string;
+  required?: boolean;
+  schema?: {
+    type: string;
+    format?: string;
+  };
+};
+
 export type ApiDocOptions = {
   summary?: string;
   description?: string;
   tags?: string[];
   contentType?: "application/json" | "multipart/form-data";
-  params?: {
-    name: string;
-    description?: string;
-    required?: boolean;
-    schema?: {
-      type: string;
-      format?: string;
-    };
-  }[];
-  query?: {
-    name: string;
-    description?: string;
-    required?: boolean;
-    format?: string;
-    schema?: {
-      type: string;
-      format?: string;
-    };
-  }[];
+  params?: ParamsContent[];
+  query?: ParamsContent[];
   requestBody?: Newable | Newable[];
   responses?: Record<number, ResContent>;
 };

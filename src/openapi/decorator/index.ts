@@ -27,6 +27,8 @@ export function ApiDoc(options: ApiDocOptions): MethodDecorator {
 
     if (options.requestBody === "fromBody") {
       (options as any).__inferredRequestBody = getParamType("body");
+    } else if (options.requestBody === "fromMultipart") {
+      (options as any).__inferredRequestBody = getParamType("multipart");
     }
 
     if (options.query === "fromQuery") {

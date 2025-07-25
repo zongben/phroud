@@ -97,7 +97,7 @@ export function generateOpenApiSpec(
     if (apiDoc.requestBody) {
       const contentType = apiDoc.contentType ?? "application/json";
       const reqBody =
-        apiDoc.requestBody === "fromBody"
+        apiDoc.requestBody === "fromBody" || apiDoc.requestBody === "fromMultipart"
           ? (apiDoc as any).__inferredRequestBody
           : apiDoc.requestBody;
 

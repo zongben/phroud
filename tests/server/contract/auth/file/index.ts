@@ -7,8 +7,8 @@ export class UploadFile {
   title!: string;
 
   @ApiArrayProperty({
-    type: "string",
     description: "檔案",
+    type: "string",
     format: "binary",
   })
   photos!: MulterFile[];

@@ -162,7 +162,7 @@ export class AuthController extends MediatedController {
   @ApiDoc({
     tags: ["Auth"],
     contentType: "multipart/form-data",
-    requestBody: UploadFile,
+    requestBody: "fromMultipart",
   })
   @Post("/file", multer.array("photos"))
   async postFile(@Multipart(["photos"]) multi: UploadFile) {

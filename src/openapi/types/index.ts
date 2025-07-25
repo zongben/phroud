@@ -5,7 +5,7 @@ type ResContent = {
   content: Newable | Newable[] | "binary";
 };
 
-type ParamsContent = {
+export type ParamsContent = {
   name: string;
   description?: string;
   required?: boolean;
@@ -20,8 +20,8 @@ export type ApiDocOptions = {
   description?: string;
   tags?: string[];
   contentType?: "application/json" | "multipart/form-data";
-  params?: ParamsContent[];
-  query?: ParamsContent[];
+  params?: ParamsContent[] | Newable;
+  query?: ParamsContent[] | Newable;
   requestBody?: Newable | Newable[];
   responses?: Record<number, ResContent>;
 };

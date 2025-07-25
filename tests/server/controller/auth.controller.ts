@@ -28,6 +28,7 @@ import { createMulter, uploader } from "../../../src";
 import { AsyncTestMiddleware } from "../middleware";
 import { Track } from "../../../src";
 import { UploadFile } from "../contract/auth/file";
+import { GetIdParams, GetIdQuery, GetIdRes } from "../contract/auth/getId";
 
 const storage: uploader.DiskStorageOptions = {
   destination: `${process.cwd()}/tests/upload_test/`,
@@ -113,24 +114,26 @@ export class AuthController extends MediatedController {
 
   @ApiDoc({
     tags: ["Auth"],
-    params: [
-      {
-        name: "id",
-        description: "使用者id",
+    params: GetIdParams,
+    query: GetIdQuery,
+    responses: {
+      200: {
+        content: GetIdRes,
       },
-    ],
-    query: [
-      {
-        name: "token",
-        description: "token認證",
-      },
-    ],
+    },
   })
-  @Get("/room/:id")
-  async getId(@FromQuery("token") token: any, @FromParam("id") id: any) {
-    return Responses.OK({
-      id,
+  @Get("/server/:serverId/room/:roomId")
+  async getId(
+    @FromQuery() query: GetIdQuery,
+    @FromParam() params: GetIdParams,
+  ) {
+    const { roomId, serverId } = params;
+    const { token, username } = query;
+    return Responses.OK<GetIdRes>({
+      roomId,
+      serverId,
       token,
+      username,
     });
   }
 

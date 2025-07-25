@@ -1,9 +1,60 @@
+import { Newable } from "inversify";
 import { PROPERTY_METADATA_KEY } from "./decorator";
-import { ApiDocMetaData } from "./types";
+import { ApiDocMetaData, ApiPropertyOptions, ParamsContent } from "./types";
 
 function normalizePath(path: string): string {
   return path.replace(/:([a-zA-Z0-9_]+)\??/g, (_, name) => `{${name}}`);
 }
+
+const resolveParams = (
+  operation: any,
+  location: "path" | "query",
+  params: ParamsContent[] | Newable,
+) => {
+  if (Array.isArray(params)) {
+    params?.forEach((param) => {
+      operation.parameters.push({
+        in: location,
+        name: param.name,
+        required: param.required ?? false,
+        description: param.description,
+        schema: param.schema,
+      });
+    });
+    return;
+  }
+
+  const props: {
+    key: string;
+    type: any;
+    options: ApiPropertyOptions & { isArray?: boolean };
+  }[] = Reflect.getMetadata(PROPERTY_METADATA_KEY, params) || [];
+
+  for (const { key, type, options } of props) {
+    if (!operation.parameters) {
+      operation.parameters = [];
+    }
+
+    operation.parameters.push({
+      in: location,
+      name: key,
+      required: options.required ?? false,
+      description: options.description,
+      schema: {
+        type:
+          type === String
+            ? "string"
+            : type === Number
+              ? "number"
+              : type === Boolean
+                ? "boolean"
+                : "string", // fallback
+        format: options.format,
+        example: options.example,
+      },
+    });
+  }
+};
 
 export function generateOpenApiSpec(
   apiDocs: ApiDocMetaData[],
@@ -26,28 +77,12 @@ export function generateOpenApiSpec(
 
     let schemaName: string;
     let schema: any;
-    if (apiDoc.params || apiDoc.query) {
-      operation.parameters = [];
+    if (apiDoc.params) {
+      resolveParams(operation, "path", apiDoc.params);
+    }
 
-      apiDoc.params?.forEach((param) => {
-        operation.parameters.push({
-          in: "path",
-          name: param.name,
-          required: param.required ?? false,
-          description: param.description,
-          schema: param.schema,
-        });
-      });
-
-      apiDoc.query?.forEach((param) => {
-        operation.parameters.push({
-          in: "query",
-          name: param.name,
-          required: param.required ?? false,
-          description: param.description,
-          schema: param.schema,
-        });
-      });
+    if (apiDoc.query) {
+      resolveParams(operation, "query", apiDoc.query);
     }
 
     if (apiDoc.requestBody) {

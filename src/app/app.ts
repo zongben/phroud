@@ -673,16 +673,23 @@ export class App {
   }
 
   run(port: number = 3000) {
-    let swaggerPath: string;
     if (this.#swagger) {
+      let swaggerPath: string;
       const { title, version, path } = this.#swagger.options;
-      const spec = generateOpenApiSpec(
-        this.#swagger.metaDataFn(),
-        title,
-        version,
-      );
-      swaggerPath = path ?? "/docs";
-      this.#app.use(swaggerPath, swaggerUI.serve, swaggerUI.setup(spec));
+      try {
+        const spec = generateOpenApiSpec(
+          this.#swagger.metaDataFn(),
+          title,
+          version,
+        );
+        swaggerPath = path ?? "/docs";
+        this.#app.use(swaggerPath, swaggerUI.serve, swaggerUI.setup(spec));
+        this.logger.info(
+          `Swagger UI available at http://localhost:${port}${swaggerPath}`,
+        );
+      } catch (err) {
+        this.logger.warn(`Swagger UI failed to initialize ${err}`);
+      }
     }
 
     this.useMiddleware(this.#useExceptionMiddleware);
@@ -690,11 +697,6 @@ export class App {
 
     this.#server.listen(port, () => {
       this.logger.info(`Listening on port ${port}`);
-      if (this.#swagger) {
-        this.logger.info(
-          `Swagger UI available at http://localhost:${port}${swaggerPath}`,
-        );
-      }
     });
 
     this.#server.on("connection", (conn) => {

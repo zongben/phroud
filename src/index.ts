@@ -8,4 +8,4 @@ export * from "./logger/index";
 export * from "./mediator/index";
 export * from "./controller/index";
 export * from "./app/index";
-export * from "./openapi";
+export * from "./openapi/index";

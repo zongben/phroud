@@ -5,7 +5,7 @@ import {
   ApiPropertyOptions,
 } from "../types";
 
-export const APIDOC_KEY = Symbol.for("empack:apiDoc");
+export const APIDOC_KEY = Symbol("empack:apiDoc");
 
 export function ApiDoc(options: ApiDocOptions): MethodDecorator {
   return (target, propertyKey) => {

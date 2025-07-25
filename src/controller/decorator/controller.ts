@@ -2,7 +2,7 @@ import { injectable, injectFromBase, Newable } from "inversify";
 import { EmpackMiddleware, EmpackMiddlewareFunction } from "../../app";
 
 export const WSCONTROLLER_METADATA = {
-  PATH: Symbol.for("empack:ws_controller_path"),
+  PATH: Symbol("empack:ws_controller_path"),
 };
 
 export const CONTROLLER_METADATA = {

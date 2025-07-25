@@ -1,6 +1,6 @@
 import { GuardMiddleware } from "../types";
 
-export const GUARD_KEY = Symbol.for("empack:guard");
+export const GUARD_KEY = Symbol("empack:guard");
 
 export function Guard(
   guard: GuardMiddleware,

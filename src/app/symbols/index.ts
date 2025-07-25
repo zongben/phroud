@@ -1,2 +1,2 @@
-export const IEnvSymbol = Symbol.for("empack:IEnv");
-export const ILoggerSymbol = Symbol.for("empack:ILogger");
+export const IEnvSymbol = Symbol("empack:IEnv");
+export const ILoggerSymbol = Symbol("empack:ILogger");

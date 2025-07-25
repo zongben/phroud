@@ -1,2 +1,2 @@
-export const ISenderSymbol = Symbol.for("empack:ISender");
-export const IPublisherSymbol = Symbol.for("empack:IPublisher");
+export const ISenderSymbol = Symbol("empack:ISender");
+export const IPublisherSymbol = Symbol("empack:IPublisher");

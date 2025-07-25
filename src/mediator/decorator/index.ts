@@ -1,8 +1,8 @@
 import { Newable } from "inversify";
 
 export const MEDIATOR_KEY = {
-  handlerFor: Symbol.for("empack:handleFor"),
-  subscribe: Symbol.for("empack:subscribeTo"),
+  handlerFor: Symbol("empack:handleFor"),
+  subscribe: Symbol("empack:subscribeTo"),
 };
 
 export function HandleFor<TReq>(

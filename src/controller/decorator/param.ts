@@ -10,6 +10,8 @@ export const FromReq = createParamDecorator("req");
 export const FromRes = createParamDecorator("res");
 export const FromFile = createParamDecorator("file");
 export const FromFiles = createParamDecorator("files");
+export const FromCookie = createParamDecorator("cookie");
+export const FromHeader = createParamDecorator("header");
 export const Multipart = createMulterDecorator("multipart");
 
 function createMulterDecorator(source: ParamSource) {

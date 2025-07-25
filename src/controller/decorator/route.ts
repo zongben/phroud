@@ -110,6 +110,12 @@ function createRouteDecorator(method: RouteDefinition["method"]) {
                 });
 
                 break;
+              case "cookie":
+                rawValue = req.cookies;
+                break;
+              case "header":
+                rawValue = req.header;
+                break;
               default:
                 rawValue = undefined;
             }

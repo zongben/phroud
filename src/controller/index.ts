@@ -16,6 +16,8 @@ export {
   FromRes,
   FromReq,
   Multipart,
+  FromCookie,
+  FromHeader,
   Post,
   Get,
   Put,

@@ -45,7 +45,9 @@ export type ParamSource =
   | "res"
   | "file"
   | "files"
-  | "multipart";
+  | "multipart"
+  | "cookie"
+  | "header";
 
 export type WebSocketContext = {
   req: IncomingMessage;

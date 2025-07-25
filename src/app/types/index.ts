@@ -36,5 +36,9 @@ export type OpenApiOptions = {
   title?: string;
   version?: string;
   path?: string;
-  sortBy?: "method" | "route"
+  sortBy?: "method" | "route";
+  servers?: {
+    description?: string;
+    url: string;
+  }[];
 };

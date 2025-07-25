@@ -675,12 +675,13 @@ export class App {
   run(port: number = 3000) {
     if (this.#swagger) {
       let swaggerPath: string;
-      const { title, version, path } = this.#swagger.options;
+      const { title, version, path, servers } = this.#swagger.options;
       try {
         const spec = generateOpenApiSpec(
           this.#swagger.metaDataFn(),
           title,
           version,
+          servers,
         );
         swaggerPath = path ?? "/docs";
         this.#app.use(swaggerPath, swaggerUI.serve, swaggerUI.setup(spec));

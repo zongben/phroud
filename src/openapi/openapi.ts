@@ -60,6 +60,7 @@ export function generateOpenApiSpec(
   apiDocs: ApiDocMetaData[],
   title?: string,
   version?: string,
+  servers?: any,
 ) {
   const paths: Record<string, any> = {};
   const componentsSchemas: Map<string, any> = new Map();
@@ -170,6 +171,7 @@ export function generateOpenApiSpec(
       title,
       version,
     },
+    servers,
     paths,
     components: {
       schemas,

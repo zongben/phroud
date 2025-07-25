@@ -44,10 +44,21 @@ function createParamDecorator(source: ParamSource) {
         Reflect.getMetadata(PARAM_METADATA_KEY, target, propertyKey as any) ||
         [];
 
+      let paramType;
+      if (propertyKey) {
+        const paramTypes = Reflect.getMetadata(
+          "design:paramtypes",
+          target,
+          propertyKey,
+        );
+        paramType = paramTypes[parameterIndex];
+      }
+
       existingParams.push({
         index: parameterIndex,
         source,
         name,
+        paramType,
       });
 
       Reflect.defineMetadata(

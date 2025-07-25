@@ -4,11 +4,39 @@ import {
   ApiDocOptions,
   ApiPropertyOptions,
 } from "../types";
+import { ParamMetadata, ParamSource } from "../../controller/types";
+import { PARAM_METADATA_KEY } from "../../controller/decorator";
 
 export const APIDOC_KEY = Symbol("empack:apiDoc");
 
 export function ApiDoc(options: ApiDocOptions): MethodDecorator {
   return (target, propertyKey) => {
+    const paramTypes: any[] = Reflect.getMetadata(
+      "design:paramtypes",
+      target,
+      propertyKey,
+    );
+
+    function getParamType(source: ParamSource): undefined | Newable {
+      const paramMeta: ParamMetadata[] =
+        Reflect.getMetadata(PARAM_METADATA_KEY, target, propertyKey) ?? [];
+
+      const fromBodyParam = paramMeta.find((p) => p.source === source);
+      return fromBodyParam ? paramTypes[fromBodyParam.index] : undefined;
+    }
+
+    if (options.requestBody === "fromBody") {
+      (options as any).__inferredRequestBody = getParamType("body");
+    }
+
+    if (options.query === "fromQuery") {
+      (options as any).__inferredQuery = getParamType("query");
+    }
+
+    if (options.query === "fromQuery") {
+      (options as any).__inferredParams = getParamType("param");
+    }
+
     Reflect.defineMetadata(APIDOC_KEY, options, target, propertyKey);
   };
 }

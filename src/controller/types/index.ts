@@ -34,6 +34,7 @@ export type ParamMetadata = {
   source: ParamSource;
   name?: string;
   fileNames?: string[];
+  paramType?: Newable
 };
 
 export type ParamSource =

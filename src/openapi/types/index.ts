@@ -20,9 +20,9 @@ export type ApiDocOptions = {
   description?: string;
   tags?: string[];
   contentType?: "application/json" | "multipart/form-data";
-  params?: ParamsContent[] | Newable;
-  query?: ParamsContent[] | Newable;
-  requestBody?: Newable | Newable[];
+  params?: ParamsContent[] | Newable | "fromParams";
+  query?: ParamsContent[] | Newable | "fromQuery";
+  requestBody?: Newable | Newable[] | "fromBody";
   responses?: Record<number, ResContent>;
 };
 

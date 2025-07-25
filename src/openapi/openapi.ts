@@ -79,11 +79,21 @@ export function generateOpenApiSpec(
     let schemaName: string;
     let schema: any;
     if (apiDoc.params) {
-      resolveParams(operation, "path", apiDoc.params);
+      if (apiDoc.params === "fromParams") {
+        const params = (apiDoc as any).__inferredParams;
+        resolveParams(operation, "path", params);
+      } else {
+        resolveParams(operation, "path", apiDoc.params);
+      }
     }
 
     if (apiDoc.query) {
-      resolveParams(operation, "query", apiDoc.query);
+      if (apiDoc.query === "fromQuery") {
+        const query = (apiDoc as any).__inferredQuery;
+        resolveParams(operation, "query", query);
+      } else {
+        resolveParams(operation, "query", apiDoc.query);
+      }
     }
 
     if (apiDoc.requestBody) {
@@ -96,6 +106,11 @@ export function generateOpenApiSpec(
           type: "array",
           items: { $ref: `#/components/schemas/${schemaName}` },
         };
+      } else if (apiDoc.requestBody === "fromBody") {
+        const type = (apiDoc as any).__inferredRequestBody;
+        schemaName = type.name;
+        collectSchemas(type, componentsSchemas);
+        schema = { $ref: `#/components/schemas/${schemaName}` };
       } else {
         schemaName = apiDoc.requestBody.name;
         collectSchemas(apiDoc.requestBody, componentsSchemas);

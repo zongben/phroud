@@ -48,9 +48,9 @@ export class AuthController extends MediatedController {
     summary: "會員註冊",
     description: "會員註冊詳細說明",
     tags: ["Auth"],
-    requestBody: [RegisterReq],
+    requestBody: "fromBody",
     responses: {
-      201: { description: "回傳內容", content: RegisterReq },
+      201: { description: "回傳內容", content: RegisterRes },
       409: { description: "錯誤訊息", content: ErrorBody },
     },
   })
@@ -114,8 +114,8 @@ export class AuthController extends MediatedController {
 
   @ApiDoc({
     tags: ["Auth"],
-    params: GetIdParams,
-    query: GetIdQuery,
+    params: "fromParams",
+    query: "fromQuery",
     responses: {
       200: {
         content: GetIdRes,

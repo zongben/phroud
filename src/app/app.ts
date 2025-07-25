@@ -46,6 +46,33 @@ import { ApiDocMetaData } from "../openapi/types";
 import { generateOpenApiSpec } from "../openapi/openapi";
 import swaggerUI from "swagger-ui-express";
 
+function splitPath(path: string) {
+  return path.split("/").filter(Boolean);
+}
+
+function comparePath(a: string, b: string): number {
+  const aParts = splitPath(a);
+  const bParts = splitPath(b);
+
+  const len = Math.max(aParts.length, bParts.length);
+  for (let i = 0; i < len; i++) {
+    const aPart = aParts[i] ?? "";
+    const bPart = bParts[i] ?? "";
+
+    const isADynamic = aPart.startsWith(":");
+    const isBDynamic = bPart.startsWith(":");
+
+    if (isADynamic !== isBDynamic) {
+      return isADynamic ? 1 : -1;
+    }
+
+    const cmp = aPart.localeCompare(bPart);
+    if (cmp !== 0) return cmp;
+  }
+
+  return 0;
+}
+
 function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
   handler: T,
   errorHandler: (err: unknown) => Promise<void> | void,
@@ -151,7 +178,7 @@ export class App {
   #defaultGuard?: GuardMiddleware;
   #controllers?: Newable[];
   #swagger?: {
-    metaData: () => ApiDocMetaData[];
+    metaDataFn: () => ApiDocMetaData[];
     options: OpenApiOptions;
   };
   logger: ILogger;
@@ -290,7 +317,9 @@ export class App {
   }
 
   enableSwagger(options: OpenApiOptions) {
-    const metaData = () => {
+    options.sortBy = options.sortBy ?? "route";
+
+    const metaDataFn = () => {
       const apiDocs: ApiDocMetaData[] = [];
 
       this.#controllers?.forEach((c) => {
@@ -332,11 +361,29 @@ export class App {
         });
       });
 
+      const methodOrder = ["GET", "POST", "PUT", "DELETE"];
+      if (options.sortBy === "method") {
+        apiDocs.sort((a, b) => {
+          const orderA = methodOrder.indexOf(a.methodName.toUpperCase());
+          const orderB = methodOrder.indexOf(b.methodName.toUpperCase());
+          return orderA - orderB;
+        });
+      } else if (options.sortBy === "route") {
+        apiDocs.sort((a, b) => {
+          const pathCmp = comparePath(a.path, b.path);
+          if (pathCmp !== 0) return pathCmp;
+
+          const orderA = methodOrder.indexOf(a.methodName.toUpperCase());
+          const orderB = methodOrder.indexOf(b.methodName.toUpperCase());
+          return (orderA === -1 ? 99 : orderA) - (orderB === -1 ? 99 : orderB);
+        });
+      }
+
       return apiDocs;
     };
 
     this.#swagger = {
-      metaData,
+      metaDataFn,
       options,
     };
     return this;
@@ -627,14 +674,16 @@ export class App {
   }
 
   run(port: number = 3000) {
+    let swaggerPath: string;
     if (this.#swagger) {
-      const { title, version } = this.#swagger.options;
+      const { title, version, path } = this.#swagger.options;
       const spec = generateOpenApiSpec(
+        this.#swagger.metaDataFn(),
         title,
         version,
-        this.#swagger.metaData(),
       );
-      this.#app.use("/docs", swaggerUI.serve, swaggerUI.setup(spec));
+      swaggerPath = path ?? "/docs";
+      this.#app.use(swaggerPath, swaggerUI.serve, swaggerUI.setup(spec));
     }
 
     this.useMiddleware(this.#useExceptionMiddleware);
@@ -644,7 +693,7 @@ export class App {
       this.logger.info(`Listening on port ${port}`);
       if (this.#swagger) {
         this.logger.info(
-          `Swagger UI available at http://localhost:${port}/docs`,
+          `Swagger UI available at http://localhost:${port}${swaggerPath}`,
         );
       }
     });

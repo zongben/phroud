@@ -6,9 +6,9 @@ function normalizePath(path: string): string {
 }
 
 export function generateOpenApiSpec(
-  title: string,
-  version: string,
   apiDocs: ApiDocMetaData[],
+  title?: string,
+  version?: string,
 ) {
   const paths: Record<string, any> = {};
   const componentsSchemas: Map<string, any> = new Map();

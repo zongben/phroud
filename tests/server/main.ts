@@ -20,7 +20,7 @@ app.setLogger(
 );
 app.enableSwagger({
   title: "Empack",
-  version: "1.0.0",
+  sortBy: "route"
 });
 app.enableAuthGuard(jwtGuard(app.env.get("JWT_SECRET")));
 app.setMediator(handlers);

@@ -33,6 +33,8 @@ export type EmpackMiddleware = IEmpackMiddleware;
 export type EmpackExceptionMiddleware = IEmpackExceptionMiddleware;
 
 export type OpenApiOptions = {
-  title: string;
-  version: string;
+  title?: string;
+  version?: string;
+  path?: string;
+  sortBy?: "method" | "route"
 };

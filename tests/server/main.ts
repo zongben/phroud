@@ -12,31 +12,36 @@ import {
 import { JwtModule } from "./infra/jwt";
 
 const app = App.createBuilder();
+
 app.setDotEnv(path.join(__dirname, ".env.test"));
+const nodeEnv = app.env.get("NODE_ENV");
+const jwtSecret = app.env.get("JWT_SECRET");
+const accessTokenExpiresIn = parseInt(app.env.get("ACCESSTOKEN_EXPIRES_IN"));
+const refreshTokenExpiresIn = parseInt(app.env.get("REFRESHTOKEN_EXPIRES_IN"));
+
 app.setLogger(
-  new Logger(
-    app.env.get("NODE_ENV") === "dev" ? LOGGER_LEVEL.DEBUG : LOGGER_LEVEL.INFO,
-  ),
+  new Logger(nodeEnv === "dev" ? LOGGER_LEVEL.DEBUG : LOGGER_LEVEL.INFO),
 );
-app.enableSwagger({
-  title: "Empack",
-  sortBy: "route"
-});
-app.enableAuthGuard(jwtGuard(app.env.get("JWT_SECRET")));
+if (nodeEnv === "dev") {
+  app.enableSwagger({
+    title: "Empack",
+  });
+}
+app.enableAuthGuard(jwtGuard(jwtSecret));
 app.setMediator(handlers);
 app.addRequestScope(ScopeTestSymbol, ScopeTest);
 app.loadModules(
   new JwtModule(
     {
-      secret: app.env.get("JWT_SECRET"),
+      secret: jwtSecret,
       options: {
-        expiresIn: parseInt(app.env.get("ACCESSTOKEN_EXPIRES_IN")),
+        expiresIn: accessTokenExpiresIn,
       },
     },
     {
-      secret: app.env.get("JWT_SECRET"),
+      secret: jwtSecret,
       options: {
-        expiresIn: parseInt(app.env.get("REFRESHTOKEN_EXPIRES_IN")),
+        expiresIn: refreshTokenExpiresIn,
       },
     },
   ),

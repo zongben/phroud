@@ -78,33 +78,36 @@ export function generateOpenApiSpec(
       operation.responses = {};
 
       let responseContentType = "application/json";
-      for (const [statusCodeStr, resType] of Object.entries(apiDoc.responses)) {
+      for (const [statusCodeStr, resContent] of Object.entries(
+        apiDoc.responses,
+      )) {
         const statusCode = Number(statusCodeStr);
         let responseSchema: any;
         let schemaName: string;
 
-        if (Array.isArray(resType)) {
-          const cls = resType[0];
+        const { content, description } = resContent;
+        if (Array.isArray(content)) {
+          const cls = content[0];
           schemaName = cls.name;
           collectSchemas(cls, componentsSchemas);
           responseSchema = {
             type: "array",
             items: { $ref: `#/components/schemas/${schemaName}` },
           };
-        } else if (resType === "binary") {
+        } else if (content === "binary") {
           responseContentType = "application/octet-stream";
           responseSchema = {
             type: "string",
             format: "binary",
           };
         } else {
-          schemaName = resType.name;
-          collectSchemas(resType, componentsSchemas);
+          schemaName = content.name;
+          collectSchemas(content, componentsSchemas);
           responseSchema = { $ref: `#/components/schemas/${schemaName}` };
         }
 
         operation.responses[statusCode] = {
-          description: `Response ${statusCode}`,
+          description,
           content: {
             [responseContentType]: {
               schema: responseSchema,

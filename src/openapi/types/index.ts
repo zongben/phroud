@@ -1,5 +1,10 @@
 import { Newable } from "inversify";
 
+type ResContent = {
+  description?: string;
+  content: Newable | Newable[] | "binary";
+};
+
 export type ApiDocOptions = {
   summary?: string;
   description?: string;
@@ -25,7 +30,7 @@ export type ApiDocOptions = {
     };
   }[];
   requestBody?: Newable | Newable[];
-  responses?: Record<number, Newable | Newable[] | "binary">;
+  responses?: Record<number, ResContent>;
 };
 
 export type ApiDocMetaData = {

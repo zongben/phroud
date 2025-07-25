@@ -49,8 +49,8 @@ export class AuthController extends MediatedController {
     tags: ["Auth"],
     requestBody: [RegisterReq],
     responses: {
-      201: RegisterRes,
-      409: ErrorBody,
+      201: { description: "回傳內容", content: RegisterReq },
+      409: { description: "錯誤訊息", content: ErrorBody },
     },
   })
   @Post("/register", validate(RegisterRule))
@@ -148,7 +148,7 @@ export class AuthController extends MediatedController {
   @ApiDoc({
     tags: ["Auth"],
     responses: {
-      200: "binary",
+      200: { description: "return a file", content: "binary" },
     },
   })
   @Get("/file")

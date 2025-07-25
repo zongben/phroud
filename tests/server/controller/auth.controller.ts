@@ -16,14 +16,17 @@ import { LoginCommand } from "../application/use-case/command/login/login.comman
 import { LoginReq, LoginRule } from "../contract/auth/login";
 import { ErrorBody } from "./error-body";
 import { ErrorCodes } from "../application/error-codes";
-import { RegisterReq, RegisterRule } from "../contract/auth/register";
+import {
+  RegisterReq,
+  RegisterRes,
+  RegisterRule,
+} from "../contract/auth/register";
 import { RegisterCommand } from "../application/use-case/command/register/register.command";
 import { inject } from "inversify";
 import { ScopeTest, ScopeTestSymbol } from "../domain/user/user.root";
 import { createMulter, uploader } from "../../../src";
 import { AsyncTestMiddleware } from "../middleware";
 import { Track } from "../../../src";
-import { RegisterResult } from "../application/use-case/command/register/register.result";
 import { UploadFile } from "../contract/auth/file";
 
 const storage: uploader.DiskStorageOptions = {
@@ -46,7 +49,8 @@ export class AuthController extends MediatedController {
     tags: ["Auth"],
     requestBody: [RegisterReq],
     responses: {
-      201: RegisterResult,
+      201: RegisterRes,
+      409: ErrorBody,
     },
   })
   @Post("/register", validate(RegisterRule))
@@ -59,7 +63,10 @@ export class AuthController extends MediatedController {
     const result = await this.dispatch(command);
     return matchResult(result, {
       ok: (v) => {
-        return Responses.Created(v);
+        return Responses.Created<RegisterRes>({
+          account: v.account,
+          username: v.username,
+        });
       },
       err: {
         [ErrorCodes.USER_ALREADY_EXISTS]: (e) => {
@@ -156,7 +163,7 @@ export class AuthController extends MediatedController {
   })
   @Post("/file", multer.array("photos"))
   async postFile(@Multipart(["photos"]) multi: UploadFile) {
-    console.log(multi)
+    console.log(multi);
     return Responses.OK({ title: multi.title });
   }
 }

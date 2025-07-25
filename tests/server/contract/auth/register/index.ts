@@ -6,6 +6,18 @@ import {
 import { ErrorBody } from "../../../controller/error-body";
 import { INVALID_CODES } from "../../invalid-codes";
 
+export class RegisterRes {
+  @ApiProperty({
+    description: "帳號",
+  })
+  account!: string;
+
+  @ApiProperty({
+    description: "使用者名稱",
+  })
+  username!: string;
+}
+
 export class Address {
   @ApiProperty({
     description: "國家",

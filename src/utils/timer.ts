@@ -2,8 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { performance } from "node:perf_hooks";
 import { AsyncLocalStorage } from "node:async_hooks";
 import onFinished from "on-finished";
-import { ILogger } from "../logger";
-import { EmpackMiddlewareFunction } from "../app";
+import { EmpackMiddlewareFunction, ILogger } from "../app";
 import { TimerHanlder, TimeSpan } from ".";
 
 const timerStorage = new AsyncLocalStorage<Timer>();

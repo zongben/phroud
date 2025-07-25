@@ -1,7 +1,7 @@
 export { NextFunction, Request, Response } from "express";
 export { RawData, WebSocket } from "ws";
 export { ILoggerSymbol, IEnvSymbol } from "./symbols/index";
-export type { IEnv } from "./interfaces/index";
+export type { IEnv, ILogger } from "./interfaces/index";
 export type {
   NotFoundHandler,
   EmpackExceptionMiddleware,

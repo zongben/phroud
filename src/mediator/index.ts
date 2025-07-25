@@ -1,5 +1,4 @@
 export { IPublisherSymbol, ISenderSymbol } from "./symbols/index";
-export type {} from "./types/index";
 export type {
   IReqHandler,
   ISender,

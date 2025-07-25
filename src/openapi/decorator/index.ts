@@ -25,17 +25,16 @@ export function ApiDoc(options: ApiDocOptions): MethodDecorator {
       return fromBodyParam ? paramTypes[fromBodyParam.index] : undefined;
     }
 
-    if (options.requestBody === "fromBody") {
-      (options as any).__inferredRequestBody = getParamType("body");
-    } else if (options.requestBody === "fromMultipart") {
-      (options as any).__inferredRequestBody = getParamType("multipart");
+    if (options.requestBody === "auto") {
+      (options as any).__inferredRequestBody =
+        getParamType("multipart") ?? getParamType("body");
     }
 
-    if (options.query === "fromQuery") {
+    if (options.query === "auto") {
       (options as any).__inferredQuery = getParamType("query");
     }
 
-    if (options.query === "fromQuery") {
+    if (options.params === "auto") {
       (options as any).__inferredParams = getParamType("param");
     }
 

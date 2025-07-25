@@ -80,7 +80,7 @@ export function generateOpenApiSpec(
     let schema: any;
     if (apiDoc.params) {
       const params =
-        apiDoc.params === "fromParams"
+        apiDoc.params === "auto"
           ? (apiDoc as any).__inferredParams
           : apiDoc.params;
       resolveParams(operation, "path", params);
@@ -88,7 +88,7 @@ export function generateOpenApiSpec(
 
     if (apiDoc.query) {
       const query =
-        apiDoc.query === "fromQuery"
+        apiDoc.query === "auto"
           ? (apiDoc as any).__inferredQuery
           : apiDoc.query;
       resolveParams(operation, "query", query);
@@ -97,7 +97,7 @@ export function generateOpenApiSpec(
     if (apiDoc.requestBody) {
       const contentType = apiDoc.contentType ?? "application/json";
       const reqBody =
-        apiDoc.requestBody === "fromBody" || apiDoc.requestBody === "fromMultipart"
+        apiDoc.requestBody === "auto"
           ? (apiDoc as any).__inferredRequestBody
           : apiDoc.requestBody;
 

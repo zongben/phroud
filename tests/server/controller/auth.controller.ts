@@ -48,7 +48,7 @@ export class AuthController extends MediatedController {
     summary: "會員註冊",
     description: "會員註冊詳細說明",
     tags: ["Auth"],
-    requestBody: "fromBody",
+    requestBody: "auto",
     responses: {
       201: { description: "回傳內容", content: RegisterRes },
       409: { description: "錯誤訊息", content: ErrorBody },
@@ -114,8 +114,8 @@ export class AuthController extends MediatedController {
 
   @ApiDoc({
     tags: ["Auth"],
-    params: "fromParams",
-    query: "fromQuery",
+    params: "auto",
+    query: "auto",
     responses: {
       200: {
         content: GetIdRes,
@@ -162,7 +162,7 @@ export class AuthController extends MediatedController {
   @ApiDoc({
     tags: ["Auth"],
     contentType: "multipart/form-data",
-    requestBody: "fromMultipart",
+    requestBody: "auto",
   })
   @Post("/file", multer.array("photos"))
   async postFile(@Multipart(["photos"]) multi: UploadFile) {

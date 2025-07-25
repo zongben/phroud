@@ -7,6 +7,7 @@ import {
   Guard,
   FromQuery,
   FromParam,
+  Multipart,
 } from "../../../src/controller";
 import { ApiDoc, MediatedController } from "../../../src";
 import { matchResult } from "../../../src";
@@ -24,10 +25,6 @@ import { AsyncTestMiddleware } from "../middleware";
 import { Track } from "../../../src";
 import { RegisterResult } from "../application/use-case/command/register/register.result";
 import { UploadFile } from "../contract/auth/file";
-import {
-  FromMultiFile,
-  FromMultiFiles,
-} from "../../../src/controller/decorator";
 
 const storage: uploader.DiskStorageOptions = {
   destination: `${process.cwd()}/tests/upload_test/`,
@@ -157,8 +154,9 @@ export class AuthController extends MediatedController {
     contentType: "multipart/form-data",
     requestBody: UploadFile,
   })
-  @Post("/file", multer.array("files"))
-  async postFile(@FromMultiFiles() multi: UploadFile) {
+  @Post("/file", multer.array("photos"))
+  async postFile(@Multipart(["photos"]) multi: UploadFile) {
+    console.log(multi)
     return Responses.OK({ title: multi.title });
   }
 }

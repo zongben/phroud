@@ -11,5 +11,5 @@ export class UploadFile {
     description: "檔案",
     format: "binary",
   })
-  files!: MulterFile[];
+  photos!: MulterFile[];
 }

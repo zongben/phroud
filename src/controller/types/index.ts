@@ -33,6 +33,7 @@ export type ParamMetadata = {
   index: number;
   source: ParamSource;
   name?: string;
+  fileNames?: string[];
 };
 
 export type ParamSource =
@@ -44,8 +45,7 @@ export type ParamSource =
   | "res"
   | "file"
   | "files"
-  | "multiFile"
-  | "multiFiles";
+  | "multipart";
 
 export type WebSocketContext = {
   req: IncomingMessage;

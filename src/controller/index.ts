@@ -15,6 +15,7 @@ export {
   FromBody,
   FromRes,
   FromReq,
+  Multipart,
   Post,
   Get,
   Put,

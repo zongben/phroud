@@ -86,17 +86,29 @@ function createRouteDecorator(method: RouteDefinition["method"]) {
               case "file":
                 rawValue = req.file;
                 break;
-              case "multiFile":
+              case "multipart":
                 rawValue = {
                   ...req.body,
-                  file: req.file,
                 };
-                break;
-              case "multiFiles":
-                rawValue = {
-                  ...req.body,
-                  files: req.files,
-                };
+
+                meta.fileNames?.forEach((name) => {
+                  let value: any;
+                  if (Array.isArray(req.files)) {
+                    value = req.files.filter((f) => f.fieldname === name);
+                  } else if (req.files && typeof req.files === "object") {
+                    value = req.files[name];
+                  } else if (req.file?.fieldname === name) {
+                    value = req.file;
+                  }
+
+                  if (value !== undefined) {
+                    rawValue[name] =
+                      Array.isArray(value) && value.length === 1
+                        ? value[0]
+                        : value;
+                  }
+                });
+
                 break;
               default:
                 rawValue = undefined;

@@ -390,13 +390,14 @@ export class App {
 
   mapController(controllers: Newable<any>[]) {
     this.#controllers = controllers;
+    const REQUEST_CONTAINER = Symbol("REQUEST_CONTAINER");
 
     const createRequestScopeContainer: EmpackMiddlewareFunction = (
       req: any,
       _res,
       next,
     ) => {
-      req._container = this.#createRequestContainer();
+      req[REQUEST_CONTAINER] = this.#createRequestContainer();
       next();
     };
 
@@ -466,7 +467,8 @@ export class App {
 
         const handler = async (req: any, res: Response, next: NextFunction) => {
           try {
-            const instance = await req._container.getAsync(ControllerClass);
+            const instance =
+              await req[REQUEST_CONTAINER].getAsync(ControllerClass);
             await instance[route.handlerName](req, res, next);
           } catch (err) {
             next(err);
@@ -492,12 +494,15 @@ export class App {
     controllers: Newable<IWebSocket>[],
     fn?: (opt: WsOptions) => void,
   ) {
-    const wsMap = new Map<string, Newable<IWebSocket>>();
+    const wsMap = new Map<
+      string,
+      { controller: Newable<IWebSocket>; matcher: any }
+    >();
     for (const c of controllers) {
       const path = Reflect.getMetadata(WSCONTROLLER_METADATA.PATH, c);
       if (!path)
         throw new Error(`${c.name} is missing @WsController Decorator`);
-      wsMap.set(path, c);
+      wsMap.set(path, { controller: c, matcher: match(path) });
     }
 
     const options = new WsOptions();
@@ -519,7 +524,9 @@ export class App {
     wss.on("connection", (ws, req) => {
       ws.on("error", (err) => {
         this.logger.error(err);
-        ws.close(1011, "Internal Server Error");
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close(1011, "Internal Server Error");
+        }
       });
 
       const handleConnection = async () => {
@@ -528,23 +535,29 @@ export class App {
           ? await options.authHandler(req)
           : true;
         if (auth !== true) {
-          ws.close(auth.code, auth.reason);
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.close(auth.code, auth.reason);
+          }
           return;
         }
 
         let ctor: Newable<IWebSocket> | undefined;
         let pathParams: any;
-        for (const [pattern, c] of wsMap) {
-          const result = match(pattern)(pathname);
+        for (const [, { controller, matcher }] of wsMap) {
+          const result = matcher(pathname.toLowerCase());
           if (result) {
-            ctor = c;
+            ctor = controller;
             pathParams = result.params;
             break;
           }
         }
-        if (!ctor)
-          throw new Error(`${pathname} is not a valid websocket route`);
-
+        if (!ctor) {
+          this.logger.warn(`No WS route matched: ${pathname}`);
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.close(1008, "Invalid WebSocket Route");
+          }
+          return;
+        }
         const instance = await this.#createRequestContainer().getAsync(ctor);
         const { onMessage, onClose, onConnected } = instance;
         const ctx: WebSocketContext = {
@@ -672,7 +685,9 @@ export class App {
     return this;
   }
 
-  run(port: number = 3000) {
+  run(port?: number) {
+    port = port ?? 3000;
+
     if (this.#swagger) {
       let swaggerPath: string;
       const { title, version, path, servers } = this.#swagger.options;

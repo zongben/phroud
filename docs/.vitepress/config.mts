@@ -5,25 +5,26 @@ export default defineConfig({
   title: "Empack",
   description: "Empack",
   base: "/empack/",
-  themeConfig: {
-    // https://vitepress.dev/reference/default-theme-config
-    nav: [
-      { text: "Home", link: "/" },
-      { text: "Examples", link: "/markdown-examples" },
-    ],
-
-    sidebar: [
-      {
-        text: "Examples",
-        items: [
-          { text: "Markdown Examples", link: "/markdown-examples" },
-          { text: "Runtime API Examples", link: "/api-examples" },
+  lang: "en-us",
+  locales: {
+    root: {
+      label: "English",
+      lang: "en-us",
+      link: "/",
+      themeConfig: {
+        nav: [{ text: "Guide", link: "/guide" }],
+        sidebar: [
+          {
+            text: "Introduction",
+            items: [
+              { text: "Getting Started", link: "/getting-started" },
+            ],
+          },
+        ],
+        socialLinks: [
+          { icon: "github", link: "https://github.com/zongben/empack" },
         ],
       },
-    ],
-
-    socialLinks: [
-      { icon: "github", link: "https://github.com/vuejs/vitepress" },
-    ],
+    },
   },
 });

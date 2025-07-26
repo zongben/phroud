@@ -25,7 +25,7 @@
     "./index.*"
   ],
   "devDependencies": {
-    "@eslint/js": "^9.31.0",
+    "@eslint/js": "^9.32.0",
     "@swc/core": "^1.13.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
@@ -38,7 +38,7 @@
     "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
-    "eslint": "^9.31.0",
+    "eslint": "^9.32.0",
     "globals": "^16.3.0",
     "jest": "^30.0.5",
     "nodemon": "^3.1.10",
@@ -47,7 +47,8 @@
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.38.0"
+    "typescript-eslint": "^8.38.0",
+    "vitepress": "^1.6.3"
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -85,24 +85,26 @@ function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
   };
 }
 
-function isPlainFunction(middleware: any): boolean {
-  return (
-    typeof middleware === "function" &&
-    (!middleware.prototype || // arrow function or bound
-      Object.getOwnPropertyNames(middleware.prototype).length === 1) // 只有 constructor
-  );
+function isClassConstructor(fn: any): boolean {
+  return typeof fn === "function" && fn.toString().startsWith("class ");
 }
 
 async function resolveMiddleware(
   container: Container,
   middleware: Newable<EmpackMiddleware> | EmpackMiddlewareFunction,
 ): Promise<EmpackMiddlewareFunction> {
-  if (isPlainFunction(middleware)) {
+  if (typeof middleware === "function" && !isClassConstructor(middleware)) {
     return middleware as EmpackMiddlewareFunction;
   }
+
   const instance = await container.getAsync(
     middleware as Newable<EmpackMiddleware>,
   );
+
+  if (typeof instance?.use !== "function") {
+    throw new Error(`Middleware ${middleware.name} is missing 'use' method.`);
+  }
+
   return instance.use.bind(instance);
 }
 
@@ -390,7 +392,7 @@ export class App {
 
   mapController(controllers: Newable<any>[]) {
     this.#controllers = controllers;
-    const REQUEST_CONTAINER = Symbol("REQUEST_CONTAINER");
+    const REQUEST_CONTAINER = Symbol("empack:RequestContainer");
 
     const createRequestScopeContainer: EmpackMiddlewareFunction = (
       req: any,
@@ -457,7 +459,7 @@ export class App {
         ].map((m) => {
           return async (req: any, res: any, next: any) => {
             try {
-              const fn = await resolveMiddleware(req._container, m);
+              const fn = await resolveMiddleware(req[REQUEST_CONTAINER], m);
               await fn(req, res, next);
             } catch (err) {
               next(err);

@@ -10,7 +10,11 @@
     "copy": "cp ./package.json ./README.md ./LICENSE ./dist/",
     "pack": "npm run build && npm run copy && cd ./dist && npm pack",
     "pub": "npm run build && npm run copy && cd ./dist && npm publish",
-    "test:server": "nodemon tests/server/main.ts"
+    "test:server": "nodemon tests/server/main.ts",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "docs:deploy": "ts-node scripts/deploy-docs.ts"
   },
   "main": "./index.js",
   "module": "./index.mjs",

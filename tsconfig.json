@@ -5,7 +5,8 @@
     "emitDecoratorMetadata": true,
     "types": [
       "reflect-metadata",
-      "jest"
+      "jest",
+      "node"
     ],
     "module": "Node16",
     "moduleResolution": "Node16",

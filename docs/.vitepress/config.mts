@@ -6,6 +6,7 @@ export default defineConfig({
   description: "Empack",
   base: "/empack/",
   lang: "en-us",
+  head: [["link", { rel: "icon", href: "/empack/favicon.ico" }]],
   locales: {
     root: {
       label: "English",
@@ -16,9 +17,7 @@ export default defineConfig({
         sidebar: [
           {
             text: "Introduction",
-            items: [
-              { text: "Getting Started", link: "/getting-started" },
-            ],
+            items: [{ text: "Getting Started", link: "/getting-started" }],
           },
         ],
         socialLinks: [

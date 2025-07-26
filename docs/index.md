@@ -6,6 +6,9 @@ hero:
   name: "Empack"
   text: "An express-based web server framework"
   tagline: The framework is designed to provide an easy and lightweight development experience.
+  image:
+    src: /logo.svg 
+    alt: EmpackLogo
   actions:
     - theme: brand
       text: Getting Started

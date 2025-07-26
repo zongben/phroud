@@ -1,5 +1,5 @@
-import { injectable, injectFromBase, Newable } from "inversify";
-import { EmpackMiddleware, EmpackMiddlewareFunction } from "../../app";
+import { injectable, injectFromBase } from "inversify";
+import { EmpackMiddleware } from "../../app";
 
 export const WSCONTROLLER_METADATA = {
   PATH: Symbol("empack:ws_controller_path"),
@@ -12,7 +12,7 @@ export const CONTROLLER_METADATA = {
 
 export function Controller(
   path: string,
-  ...middleware: (Newable<EmpackMiddleware> | EmpackMiddlewareFunction)[]
+  ...middleware: EmpackMiddleware[]
 ): ClassDecorator {
   return (target) => {
     Reflect.defineMetadata(CONTROLLER_METADATA.PATH, path, target);

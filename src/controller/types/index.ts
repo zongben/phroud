@@ -1,15 +1,9 @@
 import { CookieOptions } from "express";
 import { IncomingMessage } from "http";
-import {
-  EmpackMiddleware,
-  EmpackMiddlewareFunction,
-} from "../../app/types/index";
+import { EmpackMiddleware } from "../../app/types/index";
 import { Newable } from "inversify";
 
-export type GuardMiddleware =
-  | Newable<EmpackMiddleware>
-  | EmpackMiddlewareFunction
-  | "none";
+export type GuardMiddleware = EmpackMiddleware | "none";
 
 export type ResponseWith = {
   cookies?: Cookie[];
@@ -26,7 +20,7 @@ export type RouteDefinition = {
   method: "get" | "post" | "put" | "delete" | "patch";
   path: string;
   handlerName: string;
-  middleware?: (Newable<EmpackMiddleware> | EmpackMiddlewareFunction)[];
+  middleware?: EmpackMiddleware[];
 };
 
 export type ParamMetadata = {
@@ -34,7 +28,7 @@ export type ParamMetadata = {
   source: ParamSource;
   name?: string;
   fileNames?: string[];
-  paramType?: Newable
+  paramType?: Newable;
 };
 
 export type ParamSource =

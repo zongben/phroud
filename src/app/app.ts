@@ -1,4 +1,11 @@
-import express, { Router, NextFunction, Request, Response } from "express";
+import express, {
+  Router,
+  NextFunction,
+  Request,
+  Response,
+  RequestHandler,
+  ErrorRequestHandler,
+} from "express";
 import dotenv from "dotenv";
 import "reflect-metadata";
 import { Container, Newable } from "inversify";
@@ -25,7 +32,7 @@ import { IEnvSymbol, ILoggerSymbol } from "./symbols/index";
 import { Module } from "../di/index";
 import { EventMap, MediatorMap } from "../mediator/types/index";
 import { IWebSocket } from "../controller/interfaces/index";
-import { IEnv, ILogger } from "./interfaces/index";
+import { IEmpackMiddleware, IEnv, ILogger } from "./interfaces/index";
 import { match } from "path-to-regexp";
 import { GuardMiddleware } from "../controller";
 import { RouteDefinition, WebSocketContext } from "../controller/types";
@@ -85,27 +92,38 @@ function withWsErrorHandler<T extends (...args: any[]) => Promise<any> | any>(
   };
 }
 
-function isClassConstructor(fn: any): boolean {
-  return typeof fn === "function" && fn.toString().startsWith("class ");
+function isClassConstructor(fn: unknown): fn is NewableFunction {
+  return (
+    typeof fn === "function" &&
+    /^class\s/.test(Function.prototype.toString.call(fn))
+  );
 }
 
 async function resolveMiddleware(
   container: Container,
-  middleware: Newable<EmpackMiddleware> | EmpackMiddlewareFunction,
+  middleware: EmpackMiddleware,
 ): Promise<EmpackMiddlewareFunction> {
   if (typeof middleware === "function" && !isClassConstructor(middleware)) {
     return middleware as EmpackMiddlewareFunction;
   }
 
   const instance = await container.getAsync(
-    middleware as Newable<EmpackMiddleware>,
+    middleware as Newable<IEmpackMiddleware>,
   );
 
   if (typeof instance?.use !== "function") {
     throw new Error(`Middleware ${middleware.name} is missing 'use' method.`);
   }
 
-  return instance.use.bind(instance);
+  const resolved = await instance.use();
+
+  if (typeof resolved !== "function") {
+    throw new Error(
+      `Middleware ${middleware.name}.use() did not return a function`,
+    );
+  }
+
+  return resolved;
 }
 
 class Env implements IEnv {
@@ -415,9 +433,7 @@ export class App {
         );
       }
 
-      const classMiddleware:
-        | Newable<EmpackMiddleware>[]
-        | EmpackMiddlewareFunction[] =
+      const classMiddleware: EmpackMiddleware[] =
         Reflect.getMetadata(CONTROLLER_METADATA.MIDDLEWARE, ControllerClass) ||
         [];
 
@@ -428,9 +444,7 @@ export class App {
 
       router.use(createRequestScopeContainer);
       for (const route of routes) {
-        let guardMiddleware:
-          | EmpackMiddlewareFunction
-          | Newable<EmpackMiddleware> = (_req, _res, next) => {
+        let guardMiddleware: EmpackMiddleware = (_req, _res, next) => {
           next();
         };
         if (this.#isAuthGuardEnabled) {
@@ -645,7 +659,11 @@ export class App {
   };
 
   useMiddleware(
-    middleware: EmpackMiddlewareFunction | EmpackExceptionMiddlewareFunction,
+    middleware:
+      | EmpackMiddlewareFunction
+      | EmpackExceptionMiddlewareFunction
+      | RequestHandler
+      | ErrorRequestHandler,
   ) {
     this.#app.use(middleware);
     return this;

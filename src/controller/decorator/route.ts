@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ParamMetadata, ResponseWith, RouteDefinition } from "../types";
-import { Newable } from "inversify";
-import { EmpackMiddleware, EmpackMiddlewareFunction } from "../../app";
+import { EmpackMiddleware } from "../../app";
 import {
   BufferResponse,
   FileResponse,
@@ -35,10 +34,7 @@ function applyWithData(res: Response, withData: ResponseWith = {}) {
 }
 
 function createRouteDecorator(method: RouteDefinition["method"]) {
-  return (
-    path: string,
-    ...middleware: (Newable<EmpackMiddleware> | EmpackMiddlewareFunction)[]
-  ): MethodDecorator => {
+  return (path: string, ...middleware: EmpackMiddleware[]): MethodDecorator => {
     return (target, propertyKey, descriptor: PropertyDescriptor) => {
       const original = descriptor.value;
 

@@ -1,7 +1,12 @@
 export { NextFunction, Request, Response } from "express";
 export { RawData, WebSocket } from "ws";
 export { ILoggerSymbol, IEnvSymbol } from "./symbols/index";
-export type { IEnv, ILogger } from "./interfaces/index";
+export type {
+  IEnv,
+  ILogger,
+  IEmpackMiddleware,
+  IEmpackExceptionMiddleware,
+} from "./interfaces/index";
 export type {
   NotFoundHandler,
   EmpackExceptionMiddleware,
@@ -11,5 +16,6 @@ export type {
   ExceptionHandler,
   WsAuthResult,
   HandlerResult,
+  OpenApiOptions,
 } from "./types/index";
 export { AppOptions, App, WsOptions } from "./app";
